@@ -205,8 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+<<<<<<< HEAD
 
 
 # Files containing flags 
 flag 
 server/flag 
+=======
+>>>>>>> parent of 62847f5 (Merge branch 'main' into cia)
