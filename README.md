@@ -55,5 +55,3 @@ http -v :5000/healthz
 
 ```
 
-
-
