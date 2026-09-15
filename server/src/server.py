@@ -95,15 +95,42 @@ def create_app():
     def home():
         return app.send_static_file("index.html")
     
+#    @app.get("/healthz")
+#    def healthz():
+#        try:
+#            with get_engine().connect() as conn:
+#                conn.execute(text("SELECT 1"))
+#            db_ok = True
+#        except Exception:
+#            db_ok = False
+#        return jsonify({"message": "The server is up and running.", "db_connected": db_ok}), 200
+
+    #Test
     @app.get("/healthz")
     def healthz():
         try:
-            with get_engine().connect() as conn:
+            engine = get_engine()
+
+            with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
-            db_ok = True
-        except Exception:
-            db_ok = False
-        return jsonify({"message": "The server is up and running.", "db_connected": db_ok}), 200
+
+            return jsonify({
+                "message": "The server is up and running.",
+                "db_connected": True
+            }), 200
+
+        except Exception as e:
+            app.logger.exception("Database health check failed")
+
+            return jsonify({
+                "message": "The server is up and running.",
+                "db_connected": False,
+                "error": str(e)
+            }), 503
+
+
+
+
 
     # POST /api/create-user {email, login, password}
     @app.post("/api/create-user")
