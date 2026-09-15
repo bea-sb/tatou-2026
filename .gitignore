@@ -209,3 +209,6 @@ __marimo__/
 # Files containing flags
 flag
 server/flag
+
+# Keys
+keys/
