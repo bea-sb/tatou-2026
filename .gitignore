@@ -212,3 +212,6 @@ server/flag
 
 # Keys
 keys/
+
+# WatermarkTest
+watermarktest/
