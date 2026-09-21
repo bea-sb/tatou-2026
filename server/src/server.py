@@ -13,6 +13,9 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 
+from rmap import RMAPServer , RMAPError
+
+
 import pickle as _std_pickle
 try:
     import dill as _pickle  # allows loading classes not importable by module path
@@ -23,6 +26,7 @@ except Exception:  # dill is optional
 import watermarking_utils as WMUtils
 from watermarking_method import WatermarkingMethod
 #from watermarking_utils import METHODS, apply_watermark, read_watermark, explore_pdf, is_watermarking_applicable, get_method
+
 
 def create_app():
     app = Flask(__name__)
@@ -809,6 +813,93 @@ def create_app():
             "method": method,
             "position": position
         }), 201
+
+
+    """
+    Server-side implementation of the RMAP protocol.
+
+    IMPORTANT: RMAP itself does not implement, require, or assume any HTTP
+    route for retrieving whatever the link ultimately unlocks, nor any
+    particular route names for the handshake endpoints themselves. This
+    library only handles the 4-message PGP handshake (msg1/resp1/msg2/resp2)
+    and computing the resulting `expectedLink` string. Your endpoint names
+    (e.g. "/msg1" vs "/api/rmap-initiate") and what the link value even
+    represents (a document ID, a session token, part of a URL, or nothing
+    URL-related at all) are entirely up to your Flask app. `expectedLink`
+    itself is just an opaque string you can use as a session/lookup key
+    however your project needs.
+
+    The decrypted resp2 payload is `{"result": "<link>"}` (matching this
+    course's API spec).
+
+    Typical usage inside a Flask app (the route names and linkPrefix below
+    are just one example of how a project *might* choose to expose things):
+
+    """
+    sessions = {}
+    
+    server = RMAPServer(
+        server_public_key_path="keys/server_pub.asc",
+        server_private_key_path="keys/server_priv.asc",
+        passphrase= os.environ.get("PASSPHRASE"),       # or None if the key isn't protected
+        linkPrefix="http://localhost:5000/get-document/",
+        verbose=True,
+    )
+    server.loadIdentities("keys/clients/")
+
+    @app.post("/rmap/initiate/msg1")
+    def rmap_initiate_msg1():
+
+        info = request.get_json()
+
+        if not info:
+            return jsonify({"error" : "missing json bod"}), 400 #Bad Reques
+        try:
+            identity, resp1 = server.receiveMsg1(info)
+            return jsonify(resp1), 200
+        #EXCEPTION specifyprevents false silent failures
+        except Exception as e:
+            app.logger.exception("RMAP msg1 initiate failed")
+            return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
+
+        
+
+
+    @app.post("/rmap/getlink/msg2")
+    def rmap_getlink_msg2():
+
+        info = request.get_json()#should we add silent=true here?
+        #we should add some error messages or
+        #pick up if its empty null etc
+        if not info:
+            return jsonify({"error" : "missing json bod, something is missing"}), 400
+        try:
+            # expectedLink is always just the bare 32-hex-char link, even
+            # though the value inside resp2 itself is prefixed with
+            # linkPrefix - use expectedLink as your internal session key,
+            # e.g. to remember which identity completed which handshake.
+            identity, expectedLink, resp2 = server.receiveMsg2(info)
+            sessions[expectedLink] = identity
+            return jsonify(resp2)
+        except Exception as e: #catch
+            app.logger.exception("RMAP msg2 fauled")
+            return jsonify({"error" : "rmap getlinbk ms2 failed"}), 400
+        # This route, its name, and its URL shape are entirely up to your
+        # project - RMAP has no opinion here. This is just one example.
+    
+
+    @app.get("/get-document/<id>")
+    def get_document(id):
+        identity = sessions.get(id)
+
+        if identity is None:
+            return jsonify({"error" : "Unkown or expored link"}), 404
+        
+
+
+
+
+
 
     return app
     

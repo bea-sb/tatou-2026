@@ -39,7 +39,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "3306:3306"
+      - "3307:3306" #chage back to 3307
     restart: unless-stopped
 
   phpmyadmin:
