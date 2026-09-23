@@ -43,6 +43,7 @@ from watermarking_method import (
 )
 from add_after_eof import AddAfterEOF
 from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
+from xmp_visible_watermark import XMPVisibleWatermark
 
 # --------------------
 # Method registry
@@ -50,8 +51,10 @@ from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
 
 METHODS: Dict[str, WatermarkingMethod] = {
     AddAfterEOF.name: AddAfterEOF(),
-    UnsafeBashBridgeAppendEOF.name: UnsafeBashBridgeAppendEOF()
+    UnsafeBashBridgeAppendEOF.name: UnsafeBashBridgeAppendEOF(),
+    XMPVisibleWatermark.name: XMPVisibleWatermark(),
 }
+
 """Registry of available watermarking methods.
 
 Keys are human-readable method names (stable, lowercase, hyphenated)
@@ -102,7 +105,7 @@ def is_watermarking_applicable(
     method: str | WatermarkingMethod,
     pdf: PdfSource,
     position: str | None = None,
-) -> bytes:
+) -> bool:
     """Apply a watermark using the specified method and return new PDF bytes."""
     m = get_method(method)
     return m.is_watermark_applicable(pdf=pdf, position=position)

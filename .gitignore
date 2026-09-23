@@ -215,3 +215,6 @@ keys/
 
 # WatermarkTest
 watermarktest/
+
+# For local docker settings
+docker-compose.override.yml
