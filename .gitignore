@@ -216,7 +216,7 @@ keys/
 # WatermarkTest
 watermarktest/
 
-# override port
+# override port # For local docker settings
 docker-compose.override.yml
 
 #hide those pdfies
@@ -224,3 +224,4 @@ docker-compose.override.yml
 
 # examples folder maily rmap
 examples/
+

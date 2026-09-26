@@ -26,6 +26,7 @@ COPY keys/server_priv.asc /app/keys/server_priv.asc
 COPY keys/clients /app/keys/clients
 
 COPY entrypoint.sh /app/entrypoint.sh
+COPY test /app/test
 RUN pip install --no-cache-dir -e .
 
 EXPOSE 5000
