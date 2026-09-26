@@ -80,7 +80,7 @@ class XMPVisibleWatermark(WatermarkingMethod):
             "Visible watermark with encrypted XMP metadata. "
             "Supported positions: bottom-right, bottom-left, "
             "top-right, top-left, center. "
-            "For intended_for, position may be a JSON object such as "
+            "For intended_for which is the visible watermark, position may be a JSON object such as "
             '{"position":"bottom-right","intended_for":"Alice"}. '
             "If intended_for is empty, the visible watermark is "
             '"your individual copy, do not share".'

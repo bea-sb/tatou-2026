@@ -10,7 +10,8 @@ dependencies = [
 	"PyMySQL==1.1.2",
 	"SQLAlchemy==2.0.43",
 	"dill==0.4.0",
-	"cryptography>=42.0"
+	"cryptography>=42.0",
+	"pytest>=8.0"
 ]
 
 [project.optional-dependencies]

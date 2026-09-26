@@ -1,7 +1,7 @@
 import pytest
 
-from src.xmp_visible_watermark import XMPVisibleWatermark
-from src.watermarking_method import (
+from xmp_visible_watermark import XMPVisibleWatermark
+from watermarking_method import (
     InvalidKeyError,
     SecretNotFoundError,
 )
@@ -90,3 +90,96 @@ def test_empty_intended_for():
         pdf=watermarked,
         key="my key",
     ) == "my secret"
+
+def test_xmp_contains_encrypted_secret():
+    import fitz
+
+    method = XMPVisibleWatermark()
+
+    watermarked = method.add_watermark(
+        pdf=make_pdf(),
+        secret="my secret",
+        key="my key",
+    )
+
+    doc = fitz.open(
+        stream=watermarked,
+        filetype="pdf",
+    )
+
+    try:
+        xmp = doc.get_xml_metadata()
+    finally:
+        doc.close()
+
+    assert xmp
+    assert XMPVisibleWatermark.XMP_NAMESPACE in xmp
+    assert XMPVisibleWatermark.XMP_PROPERTY in xmp
+
+def test_secret_is_not_stored_as_plaintext():
+    method = XMPVisibleWatermark()
+
+    secret = "this is my very secret watermark"
+
+    watermarked = method.add_watermark(
+        pdf=make_pdf(),
+        secret=secret,
+        key="my key",
+    )
+
+    assert secret.encode("utf-8") not in watermarked
+
+def test_xmp_encrypted_value_round_trip():
+    import base64
+    import fitz
+    import xml.etree.ElementTree as ET
+
+    method = XMPVisibleWatermark()
+
+    secret = "my secret"
+    key = "my key"
+
+    watermarked = method.add_watermark(
+        pdf=make_pdf(),
+        secret=secret,
+        key=key,
+    )
+
+    doc = fitz.open(
+        stream=watermarked,
+        filetype="pdf",
+    )
+
+    try:
+        xmp = doc.get_xml_metadata()
+    finally:
+        doc.close()
+
+    root = ET.fromstring(xmp)
+
+    property_tag = (
+        f"{{{method.XMP_NAMESPACE}}}"
+        f"{method.XMP_PROPERTY}"
+    )
+
+    element = root.find(
+        f".//{property_tag}"
+    )
+
+    assert element is not None
+    assert element.text
+
+    encrypted = base64.b64decode(
+        element.text,
+        validate=True,
+    )
+
+    assert encrypted != secret.encode("utf-8")
+
+    decrypted = method._decrypt_secret(
+        encrypted,
+        key,
+    )
+
+    assert decrypted == secret
+

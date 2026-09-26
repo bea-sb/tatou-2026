@@ -136,7 +136,6 @@
                 <button class="btn" data-action="view" data-id="${doc.id}">View</button>
                 <button class="btn" data-action="versions" data-id="${doc.id}">Versions</button>
                 <button class="btn" data-action="watermark" data-id="${doc.id}">Watermark</button>
-                <button class="btn" data-action="readwm" data-id="${doc.id}">Read watermark</button>
                 <button class="btn" data-action="delete" data-id="${doc.id}">Delete</button>
               </div>
             </td>
@@ -197,9 +196,14 @@
               <div>
                 <div><strong>Link:</strong> <a href="api/get-version/${escapeHtml(v.link)}">${escapeHtml(v.link)}</a></div>
                 <div class="muted small">Method: ${escapeHtml(v.method || '')} • Intended for: ${escapeHtml(v.intended_for || '')}</div>
-              </div>
               <div class="row-actions">
-                <button class="btn" data-open-version="${v.link}">Open</button>
+                <button class="btn" data-open-version="${escapeHtml(v.link)}">
+                  Open
+                </button>
+
+                <button class="btn" data-read-version="${v.id}">
+                  Read watermark
+                </button>
               </div>
             </li>`).join('');
           openModal('Watermarked versions for #' + id, `<ul class="list">${list || '<li class=muted>No versions yet.</li>'}</ul>`);
@@ -249,49 +253,117 @@
       });
     }
 
-    async function openReadWatermarkForm(documentId){
+    async function openReadWatermarkForm(versionId) {
       const methods = await loadMethods();
-      const options = methods.map(m => `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)} — ${escapeHtml(m.description||'')}</option>`).join('');
-      openModal('Read watermark for #' + documentId, `
+
+      const options = methods
+        .map(
+          m =>
+            `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)} — ${escapeHtml(m.description || '')}</option>`
+        )
+        .join('');
+
+      openModal('Read watermark for version #' + versionId, `
         <form id="readWmForm" class="form-vertical">
-          <label>Method<select name="method" required><option value="" disabled selected>Select a method</option>${options}</select></label>
-          <label>Position<input name="position" placeholder="Position"></label>
-          <label>Key<input name="key" placeholder="Reader key" required></label>
+          <label>
+            Method
+            <select name="method" required>
+              <option value="" disabled selected>Select a method</option>
+              ${options}
+            </select>
+          </label>
+
+          <label>
+            Position
+            <input name="position" placeholder="Position">
+          </label>
+
+          <label>
+            Key
+            <input name="key" placeholder="Reader key" required>
+          </label>
+
           <div class="row-actions">
-            <button class="btn" type="button" id="cancelRead">Cancel</button>
-            <button class="btn btn--primary" type="submit">Read</button>
+            <button class="btn" type="button" id="cancelRead">
+              Cancel
+            </button>
+
+            <button class="btn btn--primary" type="submit">
+              Read
+            </button>
           </div>
         </form>
       `);
-      document.getElementById('cancelRead').onclick = () => { modal.hidden = true; };
-      document.getElementById('readWmForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        const payload = Object.fromEntries(fd.entries());
-        try {
-          const r = await apiFetchJSON(`/api/read-watermark/${documentId}`, 'POST', payload);
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          const data = await r.json();
-          openModal('Watermark data', `<pre class="pre">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`);
-        } catch(err){
-          alert('Read failed: ' + err.message);
-        }
-      });
+
+      document.getElementById('cancelRead').onclick = () => {
+        modal.hidden = true;
+      };
+
+      document
+        .getElementById('readWmForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const fd = new FormData(e.currentTarget);
+          const payload = Object.fromEntries(fd.entries());
+
+          try {
+            const r = await apiFetchJSON(
+              `/api/read-watermark/${versionId}`,
+              'POST',
+              payload
+            );
+
+            if (!r.ok) {
+              throw new Error('HTTP ' + r.status);
+            }
+
+            const data = await r.json();
+
+            openModal(
+              'Watermark data',
+              `<pre class="pre">${escapeHtml(
+                JSON.stringify(data, null, 2)
+              )}</pre>`
+            );
+          } catch (err) {
+            alert('Read failed: ' + err.message);
+          }
+        });
     }
 
     modal.addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-open-version]');
-      if (!btn) return;
-      const link = btn.getAttribute('data-open-version');
-      try {
-        const r = await apiFetch('/api/get-version/' + encodeURIComponent(link));
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        setTimeout(()=> URL.revokeObjectURL(url), 60_000);
-      } catch (err) {
-        alert('Open failed: ' + err.message);
+      const openBtn = e.target.closest('button[data-open-version]');
+
+      if (openBtn) {
+        const link = openBtn.getAttribute('data-open-version');
+
+        try {
+          const r = await apiFetch(
+            '/api/get-version/' + encodeURIComponent(link)
+          );
+
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+
+          const blob = await r.blob();
+          const url = URL.createObjectURL(blob);
+
+          window.open(url, '_blank');
+
+          setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        } catch (err) {
+          alert('Open failed: ' + err.message);
+        }
+
+        return;
+      }
+
+      const readBtn = e.target.closest('button[data-read-version]');
+
+      if (readBtn) {
+        const versionId = readBtn.getAttribute('data-read-version');
+
+        openReadWatermarkForm(versionId);
       }
     });
 

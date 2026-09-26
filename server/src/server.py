@@ -289,8 +289,6 @@ def create_app():
             "id": int(r.id),
             "documentid": int(r.documentid),
             "link": r.link,
-            "intended_for": r.intended_for,
-            "secret": r.secret,
             "method": r.method,
         } for r in rows]
         return jsonify({"versions": versions}), 200
@@ -865,82 +863,206 @@ def create_app():
             
         return jsonify({"methods": methods, "count": len(methods)}), 200
         
-    # POST /api/read-watermark
+    # POST /api/read-watermark or /api/read-watermark/<version_id>
     @app.post("/api/read-watermark")
-    @app.post("/api/read-watermark/<int:document_id>")
+    @app.post("/api/read-watermark/<int:version_id>")
     @require_auth
-    def read_watermark(document_id: int | None = None):
-        # accept id from path, query (?id= / ?documentid=), or JSON body on POST
-        if not document_id:
-            document_id = (
-                request.args.get("id")
-                or request.args.get("documentid")
-                or (request.is_json and (request.get_json(silent=True) or {}).get("id"))
-            )
-        try:
-            doc_id = document_id
-        except (TypeError, ValueError):
-            return jsonify({"error": "document id required"}), 400
-            
+    def read_watermark(version_id: int | None = None):
+        """
+        Read the watermark from a specific watermarked Version.
+
+        The version_id refers to Versions.id, NOT Documents.id.
+
+        JSON body:
+        {
+            "key": "my key"
+        }
+
+        The watermarking method is taken from Versions.method rather
+        than trusted from the client.
+        """
+
+        # ---------------------------------------------------------
+        # Authentication
+        # ---------------------------------------------------------
+
+        if not getattr(g, "user", None):
+            return jsonify({
+                "error": "Authentication required"
+            }), 401
+
+        # ---------------------------------------------------------
+        # Resolve version ID
+        # ---------------------------------------------------------
+        #
+        # Accept:
+        #   /api/read-watermark/42
+        #
+        # or:
+        #   /api/read-watermark?id=42
+        #
+        # or:
+        #   /api/read-watermark?version_id=42
+        #
+        # or JSON:
+        #   {"version_id": 42, "key": "..."}
+        #
+        # ---------------------------------------------------------
+
         payload = request.get_json(silent=True) or {}
-        # allow a couple of aliases for convenience
-        method = payload.get("method")
-        position = payload.get("position") or None
+
+        if version_id is None:
+            version_id = (
+                request.args.get("version_id")
+                or request.args.get("id")
+                or payload.get("version_id")
+            )
+
+        try:
+            version_id = int(version_id)
+        except (TypeError, ValueError):
+            return jsonify({
+                "error": "version_id (int) is required"
+            }), 400
+
+        # ---------------------------------------------------------
+        # Read key
+        # ---------------------------------------------------------
+
         key = payload.get("key")
 
-        # validate input
-        try:
-            doc_id = int(doc_id)
-        except (TypeError, ValueError):
-            return jsonify({"error": "document_id (int) is required"}), 400
-        if not method or not isinstance(key, str):
-            return jsonify({"error": "method, and key are required"}), 400
+        if not isinstance(key, str) or not key:
+            return jsonify({
+                "error": "key is required"
+            }), 400
 
-        # lookup the document; FIXME enforce ownership
+        # ---------------------------------------------------------
+        # Find Version AND verify ownership
+        # ---------------------------------------------------------
+        #
+        # Versions belongs to Documents through:
+        #
+        #   Versions.documentid -> Documents.id
+        #
+        # Documents belongs to the logged-in user through:
+        #
+        #   Documents.ownerid -> Users.id
+        #
+        # Therefore the JOIN + ownerid check ensures that the
+        # authenticated user owns the Version being read.
+        # ---------------------------------------------------------
+
         try:
             with get_engine().connect() as conn:
-                row = conn.execute(
+                version = conn.execute(
                     text("""
-                        SELECT id, name, path
-                        FROM Documents
-                        WHERE id = :id
+                        SELECT
+                            v.id,
+                            v.documentid,
+                            v.path,
+                            v.method,
+                            v.position,
+                            v.intended_for
+                        FROM Versions v
+                        JOIN Documents d
+                            ON d.id = v.documentid
+                        WHERE v.id = :version_id
+                        AND d.ownerid = :ownerid
+                        LIMIT 1
                     """),
-                    {"id": doc_id},
-                ).first()
+                    {
+                        "version_id": version_id,
+                        "ownerid": int(g.user["id"]),
+                    },
+                ).mappings().first()
+
         except Exception as e:
-            return jsonify({"error": f"database error: {str(e)}"}), 503
+            return jsonify({
+                "error": f"database error: {str(e)}"
+            }), 503
 
-        if not row:
-            return jsonify({"error": "document not found"}), 404
+        # ---------------------------------------------------------
+        # Version not found / not owned by user
+        # ---------------------------------------------------------
 
-        # resolve path safely under STORAGE_DIR
-        storage_root = Path(app.config["STORAGE_DIR"]).resolve()
-        file_path = Path(row.path)
+        if version is None:
+            return jsonify({
+                "error": "watermarked version not found"
+            }), 404
+
+        # ---------------------------------------------------------
+        # Resolve the watermarked PDF path safely
+        # ---------------------------------------------------------
+
+        storage_root = Path(
+            app.config["STORAGE_DIR"]
+        ).resolve()
+
+        file_path = Path(version["path"])
+
         if not file_path.is_absolute():
             file_path = storage_root / file_path
+
         file_path = file_path.resolve()
+
+        # Make sure the version path stays inside STORAGE_DIR.
         try:
             file_path.relative_to(storage_root)
         except ValueError:
-            return jsonify({"error": "document path invalid"}), 500
+            return jsonify({
+                "error": "document path invalid"
+            }), 500
+
+        # ---------------------------------------------------------
+        # Make sure the watermarked file still exists
+        # ---------------------------------------------------------
+
         if not file_path.exists():
-            return jsonify({"error": "file missing on disk"}), 410
-        
-        secret = None
+            return jsonify({
+                "error": "watermarked file missing on disk"
+            }), 410
+
+        # ---------------------------------------------------------
+        # Read watermark
+        # ---------------------------------------------------------
+        #
+        # IMPORTANT:
+        # We get the method from the Versions table.
+        #
+        # This means a Version created with:
+        #
+        #     method = "xmp-visible"
+        #
+        # will automatically be read using xmp-visible.
+        #
+        # The client cannot accidentally tell us to use another
+        # watermarking method.
+        # ---------------------------------------------------------
+
         try:
             secret = WMUtils.read_watermark(
-                method=method,
+                method=version["method"],
                 pdf=str(file_path),
-                key=key
+                key=key,
             )
+
         except Exception as e:
-            return jsonify({"error": f"Error when attempting to read watermark: {e}"}), 400
+            return jsonify({
+                "error": f"Error when attempting to read watermark: {e}"
+            }), 400
+
+        # ---------------------------------------------------------
+        # Success
+        # ---------------------------------------------------------
+
         return jsonify({
-            "documentid": doc_id,
+            "version_id": int(version["id"]),
+            "document_id": int(version["documentid"]),
             "secret": secret,
-            "method": method,
-            "position": position
-        }), 201
+            "method": version["method"],
+            "position": version["position"],
+            "intended_for": version["intended_for"],
+        }), 200
 
     return app
     

@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -e .
 COPY src /app/src
 COPY flag /app/flag
 COPY entrypoint.sh /app/entrypoint.sh
+COPY test /app/test
 RUN pip install --no-cache-dir -e .
 
 EXPOSE 5000
