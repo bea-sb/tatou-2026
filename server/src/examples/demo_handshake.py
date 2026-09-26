@@ -74,7 +74,7 @@ def main() -> None:
         server = RMAPServer(
             server_pub_path,
             server_priv_path,
-            linkPrefix="http://localhost:5000/get-document/",
+            linkPrefix="http://localhost:5000/get-doc/", #ours is get-doc not get-document anymore
             verbose=False,
         )
         server.loadIdentities(clients_dir)

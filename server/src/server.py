@@ -2,6 +2,7 @@ import os
 import io
 import hashlib
 import datetime as dt
+import secrets
 from pathlib import Path
 from functools import wraps
 
@@ -13,7 +14,16 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 
-from rmap import RMAPServer , RMAPError
+from rmap import ( #=we want those seperate error messages thingies if need be
+    RMAPServer,
+    RMAPError,
+    MalformedMessageException,
+    UnknownIdentityException,
+    DecryptionException,
+    UnsupportedKeyException,
+    PassphraseRequiredException,
+    ProtocolStateException,
+)
 
 
 import pickle as _std_pickle
@@ -43,6 +53,23 @@ def create_app():
     app.config["DB_NAME"] = os.environ.get("DB_NAME", "tatou")
 
     app.config["STORAGE_DIR"].mkdir(parents=True, exist_ok=True)
+
+    # --- RMAP ---
+    #probably but that in database instead of i flask annars kommer de sluta fungera senare
+    #if flask restart all links lost
+    #sessions = {}
+    #= RMAP path
+    RMAP_DOC=os.environ.get("RMAP_DOC")
+
+    server = RMAPServer(
+        server_public_key_path="keys/server_pub.asc",
+        server_private_key_path="keys/server_priv.asc",
+        passphrase= os.environ.get("PASSPHRASE"),      # or None if the key isn't protected
+        linkPrefix="http://localhost:5000/get-doc/",
+        verbose=True,
+    )
+    print("RMAP LINK PREFIX:", server.linkPrefix)
+    server.loadIdentities("keys/clients/")
 
     # --- DB engine only (no Table metadata) ---
     def db_url() -> str:
@@ -317,6 +344,271 @@ def create_app():
             "method": r.method,
         } for r in rows]
         return jsonify({"versions": versions}), 200
+
+
+    ##-- RMAPstuff --##
+    #=get rmap doc 
+    def get_rmap_doc_id(pdf_file):
+
+        pdf_path = str(Path(pdf_file).resolve())
+
+        with get_engine().connect() as conn:
+            row = conn.execute(
+                text(
+                    """
+                    SELECT id, path
+                    FROM Documents
+                    WHERE path = :path
+                    LIMIT 1
+                    """
+                    ),
+                {"path" : pdf_path},
+            ).first()
+
+        if not row:
+            raise ValueError(f"RMAP source doc not registeres: {pdf_path}")
+        return row.id
+        
+    #= make sure watermodel is chanegs
+    #cant habe jsonify if iys not a @app thingy needs to make into exceptions
+    #@app.post("/make-rmap-watermark/<identity:link>") #maybe not have flask endpoint just server
+    def make_rmap_watermark(identity, link, position=None):
+        
+        #check that path thingy works
+        if not RMAP_DOC:
+            return RuntimeError({"error" : "rmap is not configures yet"})
+
+        pdf_file= Path(RMAP_DOC).resolve() #pathtofile resolve just in case for consistensy *nerd emoji*
+
+        if not pdf_file.is_file(): #if it aint a file
+            raise FileNotFoundError("the original file is missing")
+
+        # CHECK LINK IMMEDITAELTY
+        if len(link) != 32:
+            raise ValueError("invalid RMAP linky")
+        try:
+            int(link, 16)
+        except ValueError:
+            raise ValueError("invalid RMAP linku")
+
+        document_id = get_rmap_doc_id(pdf_file)
+
+        #select watermark method or our method
+        waterMethod= "Good Watermarker Generator"
+        #generate secret/key
+        secret=identity
+        key="rmap" #unused rn by watermethod
+
+        position=position or None
+    
+        # check watermark applicability
+        try:
+            applicable = WMUtils.is_watermarking_applicable(
+                method=waterMethod,
+                pdf=str(pdf_file),
+                #secret=secret,
+                #key=key,
+                position=position
+            )
+        except Exception as e:
+            raise RuntimeError(f"watermark applic check fail: {e}") from e
+            
+        if applicable is False:
+            raise ValueError("watermark meth not applicaböle")
+
+        #save pdf and apply
+        # apply watermark → bytes
+        try:
+            wm_bytes: bytes = WMUtils.apply_watermark(
+                pdf=str(pdf_file),
+                secret=secret,
+                key=key,
+                method=waterMethod,
+                position=position
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"watermark fail: {e}") from e
+
+        if not isinstance(wm_bytes, (bytes, bytearray)) or not wm_bytes:
+            raise RuntimeError("watermark no output")
+
+        #fix destination
+        # build destination file name: "<original_name>__<intended_to>.pdf"
+        watermark_dir = pdf_file.parent / "watermarks"
+        watermark_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{pdf_file.stem}__{link}.pdf"
+        dest_path = watermark_dir / filename
+
+        # write bytes
+        try:
+            with dest_path.open("wb") as f:
+                f.write(wm_bytes)
+        except Exception as e:
+            raise RuntimeError(f"failed to write watermark file: {e}") from e
+        
+        
+        if not dest_path.is_file() or dest_path.stat().st_size == 0:
+            raise IOError(f"Watermarked PDF was not created: {dest_path}")
+
+        try:
+            with get_engine().begin() as conn:
+                conn.execute(
+                    text("""
+                        INSERT INTO Versions 
+                        (documentid, link, intended_for, secret, method, position, path)
+                        
+                        VALUES 
+                        (:documentid, :link, :intended_for, :secret, :method, :position, :path)
+                    """),
+                    {
+                        "documentid": document_id,
+                        "link": link,
+                        "intended_for": identity,
+                        "secret": secret,
+                        "method": waterMethod,
+                        "position": position or "",
+                        "path": str(dest_path), #do string just to be safe
+                    },
+                )
+        except Exception:
+            try:
+                dest_path.unlink(missing_ok=True)
+            except Exception:
+                pass
+            raise
+            #we should check that the rmap watermarked version is actually in there
+
+        return dest_path
+
+
+    #=msg1
+    @app.post("/rmap-initiate-msg1")
+    def rmap_initiate_msg1():
+
+        info = request.get_json(silent=True) #silent true to stop badrequest before own errors
+
+        if not info:
+            return jsonify({"error" : "missing json bod"}), 400 #Bad Reques
+        try:
+            identity, resp1 = server.receiveMsg1(info)
+
+            return jsonify(resp1), 200
+        
+        #add some rmaperrors
+        except UnknownIdentityException as e: #put more specific error/exception first
+                    return jsonify({"error": "Unknown Identity"}), 401
+        except RMAPError as e:
+            return jsonify({"error": f"RMAP failed: {e}"}), 400
+        #EXCEPTION specifyprevents false silent failures
+        except Exception as e:
+            return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
+
+    #=msg2
+    @app.post("/rmap-getlink-msg2")
+    def rmap_getlink_msg2():
+
+        info = request.get_json(silent=True)#should we add silent=true here?
+
+        #we should add some error messages or
+        #pick up if its empty null etc
+        if not info:
+            return jsonify({"error" : "missing json bod, something is missing"}), 400
+        try:
+            # expectedLink is always just the bare 32-hex-char link, even
+            # though the value inside resp2 itself is prefixed with
+            # linkPrefix - use expectedLink as your internal session key,
+            # e.g. to remember which identity completed which handshake.
+
+            identity, expectedLink, resp2 = server.receiveMsg2(info)
+
+            make_rmap_watermark(
+                identity=identity,
+                link= expectedLink
+            )
+            return jsonify(resp2), 200
+        #add some rmaperrors
+        #put specific ones first otherwise they wont be catched and understood
+        except UnknownIdentityException as e:
+            return jsonify({"error": "Unknown Identity"}), 401
+        except RMAPError:
+            return jsonify({"Error": "rmap fail"}), 400
+        except FileNotFoundError as e:
+            return jsonify({"error" : str(e)}), 500
+        except Exception as e:
+            return jsonify({
+                "error": f"rmap watermark creation failed: {e}"
+            }), 500
+    
+
+    #=cant have document twice as get-document already taken
+    #and maybe we need one for the rmap
+    @app.get("/get-doc/<token>") #token instead of ID
+    def get_doc(token):
+
+        #maybe check that the token actually is 32 hexadecimal char like
+        #it should be as per instructionsss
+        if len(token) != 32:
+            return jsonify({"error": "not 32, invalid rmap link"}), 400
+
+        try:
+            int(token,16)
+        except ValueError:
+            return jsonify({"error": "not 32 invalid rmap linky"}), 400
+
+        #we put in db instead of dict
+        #follow what get_document and Create_watermark does lookuo datadabse
+        try:
+            with get_engine().connect() as conn:
+                row = conn.execute(
+                    text(
+                        """
+                        SELECT link, intended_for, path
+                        FROM Versions
+                        WHERE link = :link
+                        LIMIT 1
+                        """
+                    ),
+                    {"link": token},
+                ).first()
+        except Exception as e:
+            app.logger.exception("DATABASE ERROR") #show in docker logs -f tatou-
+            return jsonify({"error": f"database error: {str(e)}"}), 503
+
+        # Don’t leak whether a doc exists for another user
+        if not row:
+                return jsonify({"error": "document not found"}), 404
+        
+        file_path = Path(row.path).resolve()#resolve just in case
+
+        storage_dir = Path(app.config["STORAGE_DIR"]).resolve()
+        rmap_watermark_dir = (Path(RMAP_DOC).resolve().parent / "watermarks").resolve()
+
+        try:
+            file_path.relative_to(rmap_watermark_dir)
+        except ValueError:
+            return jsonify({"error": "doc path invalid"}), 500
+
+        if not file_path.exists():
+            return jsonify({"error": "fille missing on le disk"}), 410
+
+        send=send_file(
+            file_path,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=file_path.name, #we dont have row
+            conditional=True,
+            max_age=0,
+            last_modified=file_path.stat().st_mtime,
+        )
+
+        # :P
+        return send
+
+
+    
+        
+
     
     # GET /api/get-document or /api/get-document/<id>  → returns the PDF (inline)
     @app.get("/api/get-document")
@@ -381,6 +673,7 @@ def create_app():
     
     # GET /api/get-version/<link>  → returns the watermarked PDF (inline)
     @app.get("/api/get-version/<link>")
+    #@require_auth #=dshould we add??? NO it crashes our systesm,, probabli intentional no auth
     def get_version(link: str):
         
         try:
@@ -448,6 +741,7 @@ def create_app():
     # DELETE /api/delete-document  (and variants)
     @app.route("/api/delete-document", methods=["DELETE", "POST"])  # POST supported for convenience
     @app.route("/api/delete-document/<document_id>", methods=["DELETE"])
+    @require_auth #=NEED AUTH otherwise someone should be able to delete documensts #=AUTGH ADDED
     def delete_document(document_id: int | None = None):
         # accept id from path, query (?id= / ?documentid=), or JSON body on POST
         if not document_id:
@@ -608,8 +902,12 @@ def create_app():
         intended_slug = secure_filename(intended_for)
         dest_dir = file_path.parent / "watermarks"
         dest_dir.mkdir(parents=True, exist_ok=True)
+        #=change to hash 256 make a unique parameter hash to not make doubles with same name and stuff
+        unique=hashlib.sha256(f"{doc_id}:{intended_for}:{secret}:{dt.datetime.now(dt.UTC).isoformat()}".encode()).hexdigest()[:32]
 
-        candidate = f"{base_name}__{intended_slug}.pdf"
+
+        #candidate = f"{base_name}__{intended_slug}.pdf" #= can probably create same thing twoce lets add unique to make sure it doesnt make doubles
+        candidate = f"{base_name}__{intended_slug}__{unique}.pdf"
         dest_path = dest_dir / candidate
 
         # write bytes
@@ -620,7 +918,8 @@ def create_app():
             return jsonify({"error": f"failed to write watermarked file: {e}"}), 500
 
         # link token = sha1(watermarked_file_name)
-        link_token = hashlib.sha1(candidate.encode("utf-8")).hexdigest()
+        #link_token = hashlib.sha1(candidate.encode("utf-8")).hexdigest()
+        link_token = hashlib.sha256(candidate.encode("utf-8")).hexdigest()[:32]  #= change from sha1 generally unsafer to sha256 considered better and :32 its supposd to be 32
 
         try:
             with get_engine().begin() as conn:
@@ -658,73 +957,11 @@ def create_app():
             "filename": candidate,
             "size": len(wm_bytes),
         }), 201
-        
-        
-    @app.post("/api/load-plugin")
-    @require_auth
-    def load_plugin():
-        """
-        Load a serialized Python class implementing WatermarkingMethod from
-        STORAGE_DIR/files/plugins/<filename>.{pkl|dill} and register it in wm_mod.METHODS.
-        Body: { "filename": "MyMethod.pkl", "overwrite": false }
-        """
-        payload = request.get_json(silent=True) or {}
-        filename = (payload.get("filename") or "").strip()
-        overwrite = bool(payload.get("overwrite", False))
 
-        if not filename:
-            return jsonify({"error": "filename is required"}), 400
 
-        # Locate the plugin in /storage/files/plugins (relative to STORAGE_DIR)
-        storage_root = Path(app.config["STORAGE_DIR"])
-        plugins_dir = storage_root / "files" / "plugins"
-        try:
-            plugins_dir.mkdir(parents=True, exist_ok=True)
-            plugin_path = plugins_dir / filename
-        except Exception as e:
-            return jsonify({"error": f"plugin path error: {e}"}), 500
-
-        if not plugin_path.exists():
-            return jsonify({"error": f"plugin file not found: {safe}"}), 404
-
-        # Unpickle the object (dill if available; else std pickle)
-        try:
-            with plugin_path.open("rb") as f:
-                obj = _pickle.load(f)
-        except Exception as e:
-            return jsonify({"error": f"failed to deserialize plugin: {e}"}), 400
-
-        # Accept: class object, or instance (we'll promote instance to its class)
-        if isinstance(obj, type):
-            cls = obj
-        else:
-            cls = obj.__class__
-
-        # Determine method name for registry
-        method_name = getattr(cls, "name", getattr(cls, "__name__", None))
-        if not method_name or not isinstance(method_name, str):
-            return jsonify({"error": "plugin class must define a readable name (class.__name__ or .name)"}), 400
-
-        # Validate interface: either subclass of WatermarkingMethod or duck-typing
-        has_api = all(hasattr(cls, attr) for attr in ("add_watermark", "read_secret"))
-        if WatermarkingMethod is not None:
-            is_ok = issubclass(cls, WatermarkingMethod) and has_api
-        else:
-            is_ok = has_api
-        if not is_ok:
-            return jsonify({"error": "plugin does not implement WatermarkingMethod API (add_watermark/read_secret)"}), 400
-            
-        # Register the class (not an instance) so you can instantiate as needed later
-        WMUtils.METHODS[method_name] = cls()
-        
-        return jsonify({
-            "loaded": True,
-            "filename": filename,
-            "registered_as": method_name,
-            "class_qualname": f"{getattr(cls, '__module__', '?')}.{getattr(cls, '__qualname__', cls.__name__)}",
-            "methods_count": len(WMUtils.METHODS)
-        }), 201
-        
+    #### THIS ONE VERY SCARYand not required in specifications file and 
+    # we are scared of pickles  
+    #=F PICLES REMOVED
     
     
     # GET /api/get-watermarking-methods -> {"methods":[{"name":..., "description":...}, ...], "count":N}
@@ -836,66 +1073,6 @@ def create_app():
     are just one example of how a project *might* choose to expose things):
 
     """
-    sessions = {}
-    
-    server = RMAPServer(
-        server_public_key_path="keys/server_pub.asc",
-        server_private_key_path="keys/server_priv.asc",
-        passphrase= os.environ.get("PASSPHRASE"),       # or None if the key isn't protected
-        linkPrefix="http://localhost:5000/get-document/",
-        verbose=True,
-    )
-    server.loadIdentities("keys/clients/")
-
-    @app.post("/rmap/initiate/msg1")
-    def rmap_initiate_msg1():
-
-        info = request.get_json()
-
-        if not info:
-            return jsonify({"error" : "missing json bod"}), 400 #Bad Reques
-        try:
-            identity, resp1 = server.receiveMsg1(info)
-            return jsonify(resp1), 200
-        #EXCEPTION specifyprevents false silent failures
-        except Exception as e:
-            app.logger.exception("RMAP msg1 initiate failed")
-            return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
-
-        
-
-
-    @app.post("/rmap/getlink/msg2")
-    def rmap_getlink_msg2():
-
-        info = request.get_json()#should we add silent=true here?
-        #we should add some error messages or
-        #pick up if its empty null etc
-        if not info:
-            return jsonify({"error" : "missing json bod, something is missing"}), 400
-        try:
-            # expectedLink is always just the bare 32-hex-char link, even
-            # though the value inside resp2 itself is prefixed with
-            # linkPrefix - use expectedLink as your internal session key,
-            # e.g. to remember which identity completed which handshake.
-            identity, expectedLink, resp2 = server.receiveMsg2(info)
-            sessions[expectedLink] = identity
-            return jsonify(resp2)
-        except Exception as e: #catch
-            app.logger.exception("RMAP msg2 fauled")
-            return jsonify({"error" : "rmap getlinbk ms2 failed"}), 400
-        # This route, its name, and its URL shape are entirely up to your
-        # project - RMAP has no opinion here. This is just one example.
-    
-
-    @app.get("/get-document/<id>")
-    def get_document(id):
-        identity = sessions.get(id)
-
-        if identity is None:
-            return jsonify({"error" : "Unkown or expored link"}), 404
-        
-
 
 
 

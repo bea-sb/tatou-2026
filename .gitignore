@@ -215,3 +215,12 @@ keys/
 
 # WatermarkTest
 watermarktest/
+
+# override port
+docker-compose.override.yml
+
+#hide those pdfies
+*.pdf
+
+# examples folder maily rmap
+examples/

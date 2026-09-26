@@ -11,6 +11,7 @@ from typing import Final
 import subprocess
 
 from watermarking_method import (
+    PdfSource,
     InvalidKeyError,
     SecretNotFoundError,
     WatermarkingError,
@@ -47,6 +48,7 @@ class UnsafeBashBridgeAppendEOF(WatermarkingMethod):
         ignored by this method.
         """
         data = load_pdf_bytes(pdf)
+        #unsafe pdf path and secret directly into shell command
         cmd = "cat " + str(pdf.resolve()) + " &&  printf \"" + secret + "\""
         
         res = subprocess.run(cmd, shell=True, check=True, capture_output=True)

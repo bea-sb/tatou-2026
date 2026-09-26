@@ -1,8 +1,9 @@
 # Server image: minimal Flask + Gunicorn
 FROM python:3.12-slim
-
+# added utf-8 but server still wont start
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8 
 
 WORKDIR /app
 
@@ -19,6 +20,11 @@ RUN pip install --no-cache-dir -e .
 # Copy sources after dependencies installation
 COPY src /app/src
 COPY flag /app/flag
+#Added keys copy
+COPY keys/server_pub.asc /app/keys/server_pub.asc
+COPY keys/server_priv.asc /app/keys/server_priv.asc
+COPY keys/clients /app/keys/clients
+
 COPY entrypoint.sh /app/entrypoint.sh
 RUN pip install --no-cache-dir -e .
 
