@@ -45,7 +45,7 @@ from add_after_eof import AddAfterEOF
 #from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
 from xmp_visible_watermark import XMPVisibleWatermark
 
-from watermarktest.goodWatermarker import GoodWatermarker
+#from watermarktest.goodWatermarker import GoodWatermarker
 
 # --------------------
 # Method registry
@@ -54,7 +54,7 @@ from watermarktest.goodWatermarker import GoodWatermarker
 METHODS: Dict[str, WatermarkingMethod] = {
     AddAfterEOF.name: AddAfterEOF(),
     #UnsafeBashBridgeAppendEOF.name: UnsafeBashBridgeAppendEOF(), #Dangerous not really needed
-    GoodWatermarker.name: GoodWatermarker(),
+    #GoodWatermarker.name: GoodWatermarker(),
     XMPVisibleWatermark.name: XMPVisibleWatermark(),
 }
 
