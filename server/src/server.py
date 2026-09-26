@@ -64,6 +64,7 @@ def create_app():
     #sessions = {}
     #= RMAP path
     RMAP_DOC=os.environ.get("RMAP_DOC")
+    RMAP_KEY=os.environ.get("RMAP_KEY")
 
     server = RMAPServer(
         server_public_key_path="keys/server_pub.asc",
@@ -353,6 +354,7 @@ def create_app():
         return jsonify({"versions": versions}), 200
 
 
+
     ##-- RMAPstuff --##
     #=get rmap doc 
     def get_rmap_doc_id(pdf_file):
@@ -360,6 +362,28 @@ def create_app():
         pdf_path = str(Path(pdf_file).resolve())
 
         with get_engine().connect() as conn:
+
+                #####STRART
+            db_info = conn.execute(
+                text("SELECT DATABASE(), @@hostname")
+            ).first()
+
+            app.logger.info(
+                "RMAP DB connection: database=%r hostname=%r",
+                db_info[0],
+                db_info[1],
+            )
+
+            # Show what Documents contains
+            rows = conn.execute(
+                text("""
+                    SELECT id, name, path, ownerid, size, HEX(sha256)
+                    FROM Documents
+                """)
+            ).fetchall()
+            app.logger.info("RMAP Documents rows: %r", rows)
+            ### REMOVE
+
             row = conn.execute(
                 text(
                     """
@@ -372,9 +396,14 @@ def create_app():
                 {"path" : pdf_path},
             ).first()
 
+        app.logger.info("RMAP lookup result: %r", row)
+
         if not row:
             raise ValueError(f"RMAP source doc not registeres: {pdf_path}")
         return row.id
+
+
+    
         
     #= make sure watermodel is chanegs
     #cant habe jsonify if iys not a @app thingy needs to make into exceptions
@@ -401,10 +430,10 @@ def create_app():
         document_id = get_rmap_doc_id(pdf_file)
 
         #select watermark method or our method
-        waterMethod= "Good Watermarker Generator"
-        #generate secret/key
+        waterMethod= "xmp-visible"
         secret=identity
-        key="rmap" #unused rn by watermethod
+        key= os.environ.get("RMAP_KEY")
+        identity = identity
 
         position=position or None
     
@@ -416,6 +445,7 @@ def create_app():
                 #secret=secret,
                 #key=key,
                 position=position
+                #intended_for=identity
             )
         except Exception as e:
             raise RuntimeError(f"watermark applic check fail: {e}") from e
@@ -431,7 +461,8 @@ def create_app():
                 secret=secret,
                 key=key,
                 method=waterMethod,
-                position=position
+                position=position,
+                #intended_for=identity
             )
 
         except Exception as e:

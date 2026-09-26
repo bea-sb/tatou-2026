@@ -42,7 +42,7 @@ from watermarking_method import (
     load_pdf_bytes,
 )
 from add_after_eof import AddAfterEOF
-from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
+#from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
 from xmp_visible_watermark import XMPVisibleWatermark
 
 from watermarktest.goodWatermarker import GoodWatermarker

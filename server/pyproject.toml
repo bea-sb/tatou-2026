@@ -14,7 +14,8 @@ dependencies = [
 	"reportLab",
 	"PyPDF2",
 	"cryptography>=42.0",
-	"pytest>=8.0"
+	"pytest>=8.0",
+	"PyMuPDF",
 ]
 
 
