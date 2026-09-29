@@ -45,7 +45,7 @@ from add_after_eof import AddAfterEOF
 #from unsafe_bash_bridge_append_eof import UnsafeBashBridgeAppendEOF
 from xmp_visible_watermark import XMPVisibleWatermark
 
-from watermarktest.goodWatermarker import GoodWatermarker
+from watermarktest.goodWatermark import GoodWatermarker
 
 # --------------------
 # Method registry
