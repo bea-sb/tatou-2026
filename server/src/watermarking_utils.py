@@ -46,6 +46,7 @@ from add_after_eof import AddAfterEOF
 from xmp_visible_watermark import XMPVisibleWatermark
 
 from watermarktest.goodWatermark import GoodWatermarker
+#from watermarktest.goodWatermarker import GoodWatermarker
 
 # --------------------
 # Method registry
@@ -54,7 +55,7 @@ from watermarktest.goodWatermark import GoodWatermarker
 METHODS: Dict[str, WatermarkingMethod] = {
     AddAfterEOF.name: AddAfterEOF(),
     #UnsafeBashBridgeAppendEOF.name: UnsafeBashBridgeAppendEOF(), #Dangerous not really needed
-    GoodWatermarker.name: GoodWatermarker(),
+    #GoodWatermarker.name: GoodWatermarker(),
     XMPVisibleWatermark.name: XMPVisibleWatermark(),
 }
 
