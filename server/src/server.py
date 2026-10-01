@@ -438,6 +438,7 @@ def create_app():
         position=position or None
     
         # check watermark applicability
+        #is watermark applicable checks a file that is a path and empty pdf=str(pdf_file)
         try:
             applicable = WMUtils.is_watermarking_applicable(
                 method=waterMethod,
@@ -455,6 +456,7 @@ def create_app():
 
         #save pdf and apply
         # apply watermark → bytes
+        #same here
         try:
             wm_bytes: bytes = WMUtils.apply_watermark(
                 pdf=str(pdf_file),
