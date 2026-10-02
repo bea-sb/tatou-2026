@@ -6,7 +6,7 @@ from rmap.crypto import decrypt_json
 from rmap import DecryptionException
 
 
-BASE_URL = "http://localhost:5001"
+BASE_URL = "http://localhost:5000"
 
 CLIENT_PRIVATE_KEY = "server/keys/rmap_test_private.asc"
 SERVER_PUBLIC_KEY = "server/keys/server_pub.asc"

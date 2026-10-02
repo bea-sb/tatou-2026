@@ -1,15 +1,26 @@
+import os
 import json
 import requests
+from pathlib import Path
+from rmap import RMAPClient, RMAPServer
 
-from rmap import RMAPClient
+BASE_URL = "http://localhost:5000"
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+KEYS = REPO_ROOT / "keys"
 
-BASE_URL = "http://localhost:5001"
-
+server = RMAPServer(
+    server_public_key_path=KEYS/"server_pub.asc",
+    server_private_key_path=KEYS/"server_priv.asc",
+    passphrase= os.environ.get("PASSPHRASE"),      # or None if the key isn't protected
+    linkPrefix="http://localhost:5000/get-doc/",
+    verbose=True,
+)
+server.loadIdentities(KEYS/"clients/")
 client = RMAPClient(
     identity="RMAP_TEST",
-    client_private_key_path="server/keys/rmap_test_private.asc",
-    server_public_key_path="server/keys/server_pub.asc",
+    server_public_key_path=KEYS/"server_pub.asc",
+    client_private_key_path=KEYS/"rmap_test_private.asc",
     verbose=True,
 )
 

@@ -5,7 +5,7 @@ import requests
 from rmap import RMAPClient
 
 
-BASE_URL = "http://localhost:5001"
+BASE_URL = "http://localhost:5000"
 
 client = RMAPClient(
     identity="RMAP_TEST",

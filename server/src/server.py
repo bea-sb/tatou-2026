@@ -6,6 +6,7 @@ import secrets
 import json
 import uuid
 import re
+import threading
 from pathlib import Path
 from functools import wraps
 
@@ -66,6 +67,7 @@ def create_app():
     RMAP_DOC=os.environ.get("RMAP_DOC")
     RMAP_KEY=os.environ.get("RMAP_KEY")
 
+    """ ##OLD TESTRMAP
     server = RMAPServer(
         server_public_key_path="keys/server_pub.asc",
         server_private_key_path="keys/server_priv.asc",
@@ -73,8 +75,21 @@ def create_app():
         linkPrefix="http://localhost:5000/get-doc/",
         verbose=True,
     )
+    """ ##NEW test
+    BASE_DIRECTORY=Path(__file__).resolve().parents[1]
+    KEYS_DIRECTORY=BASE_DIRECTORY/"keys"
+    server = RMAPServer(
+            server_public_key_path=KEYS_DIRECTORY/"server_pub.asc",
+            server_private_key_path=KEYS_DIRECTORY/"server_priv.asc",
+            passphrase= os.environ.get("PASSPHRASE"),      # or None if the key isn't protected
+            linkPrefix="http://localhost:5000/get-doc/",
+            verbose=True,
+        )
     print("RMAP LINK PREFIX:", server.linkPrefix)
-    server.loadIdentities("keys/clients/")
+    server.loadIdentities(KEYS_DIRECTORY/"clients/")
+    #protection against replay attacls
+    used_rmap_links = set()
+    rmap_replay_stop = threading.Lock()
 
     # --- DB engine only (no Table metadata) ---
     def db_url() -> str:
@@ -569,10 +584,12 @@ def create_app():
             return jsonify(resp2), 200
         #add some rmaperrors
         #put specific ones first otherwise they wont be catched and understood
+        except ProtocolStateException as e:
+            return jsonify({"error": str(e)}), 400
         except UnknownIdentityException as e:
             return jsonify({"error": "Unknown Identity"}), 401
         except RMAPError:
-            return jsonify({"Error": "rmap fail"}), 400
+            return jsonify({"error": "rmap fail"}), 400
         except FileNotFoundError as e:
             return jsonify({"error" : str(e)}), 500
         except Exception as e:
