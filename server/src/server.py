@@ -65,7 +65,7 @@ def create_app():
     #sessions = {}
     #= RMAP path
     RMAP_DOC=os.environ.get("RMAP_DOC")
-    RMAP_KEY=os.environ.get("RMAP_KEY")
+    #RMAP_KEY=os.environ.get("RMAP_KEY")
 
     """ ##OLD TESTRMAP
     server = RMAPServer(
@@ -538,7 +538,8 @@ def create_app():
 
 
     #=msg1
-    @app.post("/rmap-initiate-msg1")
+    @app.post("/api/rmap-initiate")
+    @app.post("/rmap-initialize-msg1") #=REMEMBER DONT CHANGE THE LINK!!! ARGHHH
     def rmap_initiate_msg1():
 
         info = request.get_json(silent=True) #silent true to stop badrequest before own errors
@@ -560,7 +561,8 @@ def create_app():
             return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
 
     #=msg2
-    @app.post("/rmap-getlink-msg2")
+    @app.post("/api/rmap-get-link")
+    @app.post("/rmap-getlink-msg2") ##HOLY SHIT WERE STUPID DONT CHANGE THAT
     def rmap_getlink_msg2():
 
         info = request.get_json(silent=True)#should we add silent=true here?
