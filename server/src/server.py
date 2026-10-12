@@ -521,6 +521,7 @@ def create_app():
 
 
     #=msg1
+    @app.post("/api/rmap-initiate")
     @app.post("/rmap-initiate-msg1")
     def rmap_initiate_msg1():
 
@@ -543,6 +544,7 @@ def create_app():
             return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
 
     #=msg2
+    @app.post("/api/rmap-get-link")
     @app.post("/rmap-getlink-msg2")
     def rmap_getlink_msg2():
 
