@@ -75,9 +75,9 @@ print(f"nonceServer = {nonce_server}")
 # STEP 4: Load a different private key (E.g of possible attacker)
 # ------------------------------------------------------------
 
-print("\n=== STEP 4: Load server private key ===")
+print("\n=== STEP 4: Load wrong private key ===")
 
-server_private_key = load_key(WRONG_PRIVATE_KEY)
+wrong_private_key = load_key(WRONG_PRIVATE_KEY)
 
 print("Other entities private key loaded.")
 
@@ -92,7 +92,7 @@ print("\n=== STEP 5: Attempt decryption with wrong private key ===")
 try:
     decrypt_json(
         resp1,
-        server_private_key,
+        wrong_private_key,
     )
 
 except DecryptionException as e:
