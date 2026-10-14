@@ -45,6 +45,13 @@ from watermarking_method import WatermarkingMethod
 
 security_logger = logging.getLogger("tatou.security")
 security_logger.setLevel(logging.INFO)
+security_logger.propagate = False
+
+if not security_logger.handlers:
+    security_handler = logging.StreamHandler()
+    security_handler.setLevel(logging.INFO)
+    security_handler.setFormatter(logging.Formatter("%(message)s"))
+    security_logger.addHandler(security_handler)
 
 def create_app():
     app = Flask(__name__)
@@ -276,7 +283,7 @@ def create_app():
                 method=request.method,
             )
             return jsonify({"error": "invalid credentials"}), 401
-
+       
         token = _serializer().dumps({
             "uid": int(row.id),
             "login": row.login,
