@@ -18,6 +18,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 
+import logging
+
 from rmap import ( #=we want those seperate error messages thingies if need be
     RMAPServer,
     RMAPError,
@@ -41,6 +43,8 @@ import watermarking_utils as WMUtils
 from watermarking_method import WatermarkingMethod
 #from watermarking_utils import METHODS, apply_watermark, read_watermark, explore_pdf, is_watermarking_applicable, get_method
 
+security_logger = logging.getLogger("tatou.security")
+security_logger.setLevel(logging.INFO)
 
 def create_app():
     app = Flask(__name__)
@@ -97,21 +101,71 @@ def create_app():
     def _auth_error(msg: str, code: int = 401):
         return jsonify({"error": msg}), code
 
+    def log_security_event(event, severity="INFO", **details):
+        record = {
+            "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "event": event,
+            "severity": severity,
+            **details,
+        }
+
+        level = {
+            "INFO": logging.INFO,
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+        }.get(severity, logging.INFO)
+
+        security_logger.log(level, json.dumps(record))
+
     def require_auth(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             auth = request.headers.get("Authorization", "")
+
             if not auth.startswith("Bearer "):
+                log_security_event(
+                    "authentication_failed",
+                    severity="WARNING",
+                    reason="missing_or_invalid_authorization_header",
+                    endpoint=request.path,
+                    method=request.method,
+                )
                 return _auth_error("Missing or invalid Authorization header")
+
             token = auth.split(" ", 1)[1].strip()
+
             try:
-                data = _serializer().loads(token, max_age=app.config["TOKEN_TTL_SECONDS"])
+                data = _serializer().loads(
+                    token,
+                    max_age=app.config["TOKEN_TTL_SECONDS"],
+                )
             except SignatureExpired:
+                log_security_event(
+                    "authentication_failed",
+                    severity="WARNING",
+                    reason="token_expired",
+                    endpoint=request.path,
+                    method=request.method,
+                )
                 return _auth_error("Token expired")
             except BadSignature:
+                log_security_event(
+                    "authentication_failed",
+                    severity="WARNING",
+                    reason="invalid_token_signature",
+                    endpoint=request.path,
+                    method=request.method,
+                )
                 return _auth_error("Invalid token")
-            g.user = {"id": int(data["uid"]), "login": data["login"], "email": data.get("email")}
+
+            g.user = {
+                "id": int(data["uid"]),
+                "login": data["login"],
+                "email": data.get("email"),
+            }
+
             return f(*args, **kwargs)
+
         return wrapper
 
     def _sha256_file(path: Path) -> str:
@@ -176,29 +230,72 @@ def create_app():
 
         return jsonify({"id": row.id, "email": row.email, "login": row.login}), 201
 
-    # POST /api/login {login, password}
+    
+    # POST /api/login {email, password}
     @app.post("/api/login")
     def login():
         payload = request.get_json(silent=True) or {}
         email = (payload.get("email") or "").strip()
         password = payload.get("password") or ""
+
         if not email or not password:
+            log_security_event(
+                "login_failed",
+                severity="INFO",
+                reason="missing_credentials",
+                endpoint=request.path,
+                method=request.method,
+            )
             return jsonify({"error": "email and password are required"}), 400
 
         try:
             with get_engine().connect() as conn:
                 row = conn.execute(
-                    text("SELECT id, email, login, hpassword FROM Users WHERE email = :email LIMIT 1"),
+                    text(
+                        "SELECT id, email, login, hpassword "
+                        "FROM Users WHERE email = :email LIMIT 1"
+                    ),
                     {"email": email},
                 ).first()
-        except Exception as e:
-            return jsonify({"error": f"database error: {str(e)}"}), 503
+        except Exception:
+            # Not logging exceptions as it may expose database details.
+            log_security_event(
+                "login_database_error",
+                severity="ERROR",
+                endpoint=request.path,
+                method=request.method,
+            )
+            return jsonify({"error": "authentication service unavailable"}), 503
 
         if not row or not check_password_hash(row.hpassword, password):
+            log_security_event(
+                "login_failed",
+                severity="WARNING",
+                reason="invalid_credentials",
+                endpoint=request.path,
+                method=request.method,
+            )
             return jsonify({"error": "invalid credentials"}), 401
 
-        token = _serializer().dumps({"uid": int(row.id), "login": row.login, "email": row.email})
-        return jsonify({"token": token, "token_type": "bearer", "expires_in": app.config["TOKEN_TTL_SECONDS"]}), 200
+        token = _serializer().dumps({
+            "uid": int(row.id),
+            "login": row.login,
+            "email": row.email,
+        })
+
+        log_security_event(
+            "login_succeeded",
+            severity="INFO",
+            user_id=int(row.id),
+            endpoint=request.path,
+            method=request.method,
+        )
+
+        return jsonify({
+            "token": token,
+            "token_type": "bearer",
+            "expires_in": app.config["TOKEN_TTL_SECONDS"],
+        }), 200
 
     # POST /api/upload-document  (multipart/form-data)
     @app.post("/api/upload-document")
