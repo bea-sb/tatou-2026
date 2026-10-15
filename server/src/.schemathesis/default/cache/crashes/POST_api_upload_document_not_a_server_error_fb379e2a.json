@@ -1,0 +1,151 @@
+{
+  "operation": "POST /api/upload-document",
+  "method": "POST",
+  "path_template": "/api/upload-document",
+  "fingerprint": "fb379e2a",
+  "case_id": "40AIBH",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=3b39c9953f55400739afaf2d147e9887' -d $'--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\n\u00b8\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\ntrue\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\ntrue\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n{}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n-808663491701549139968984612864\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n{}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n{\"\\\\udb58\\\\udc85\\\\u0082\\\\u00ea\\\\u0094\": {\"\\\\u00c5\": [{\"\\\\u001cZ\\\\u00b3*\\\\u0019\\\\udae4\\\\ude2e\\\\ud8da\\\\udea7%w\\\\u00c8\\\\ud886\\\\ude6a\": 3.8694047588514024e+16, \"<\\\\ud9a6\\\\udf93c\\\\u00cd\\\\ud8fc\\\\udf30F\\\\u00d9\\\\u007f6e\\\\udab6\\\\ude0d\\\\ud904\\\\udc7a\\\\u00f9l\\\\ud9a2\\\\udd54>\\\\u000e\\\\ud9be\\\\udc8b\": -3.2723290930243816e+16}, false, {}], \"\\\\u00e5\\\\u00ce/\": [-3.2917878982376852e+16]}, \"G5\\\\u0083\\\\u2b98\\\\u00f8O\\\\udbf3\\\\udc39\\\\u00d9\": [[-1.1023149501713894e+16, -41309, 9675], -30302064590, {}]}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file\"\\r\\n\\r\\n\u00de\\xf1\\x8d\\x8e\\x97\\xf3\\x89\\xb1\\x81j\\xc2\\x88\\r\\n--3b39c9953f55400739afaf2d147e9887--\\r\\n' http://localhost:5000/api/upload-document\n\n\u26a0\ufe0f  Request body contains non-printable characters. Actual value: b'--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\n\\xc2\\xb8\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\ntrue\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"\"\\r\\n\\r\\ntrue\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n{}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n-808663491701549139968984612864\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"?\\xf1\\xb0\\xbc\\x85r\\xc2\\x9d\"\\r\\n\\r\\n{}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n{\"\\\\udb58\\\\udc85\\\\u0082\\\\u00ea\\\\u0094\": {\"\\\\u00c5\": [{\"\\\\u001cZ\\\\u00b3*\\\\u0019\\\\udae4\\\\ude2e\\\\ud8da\\\\udea7%w\\\\u00c8\\\\ud886\\\\ude6a\": 3.8694047588514024e+16, \"<\\\\ud9a6\\\\udf93c\\\\u00cd\\\\ud8fc\\\\udf30F\\\\u00d9\\\\u007f6e\\\\udab6\\\\ude0d\\\\ud904\\\\udc7a\\\\u00f9l\\\\ud9a2\\\\udd54>\\\\u000e\\\\ud9be\\\\udc8b\": -3.2723290930243816e+16}, false, {}], \"\\\\u00e5\\\\u00ce/\": [-3.2917878982376852e+16]}, \"G5\\\\u0083\\\\u2b98\\\\u00f8O\\\\udbf3\\\\udc39\\\\u00d9\": [[-1.1023149501713894e+16, -41309, 9675], -30302064590, {}]}\\r\\n--3b39c9953f55400739afaf2d147e9887\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file\"\\r\\n\\r\\n\\xc3\\x9e\\xf1\\x8d\\x8e\\x97\\xf3\\x89\\xb1\\x81j\\xc2\\x88\\r\\n--3b39c9953f55400739afaf2d147e9887--\\r\\n'",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/upload-document",
+      "url_template": "http://localhost:5000/api/upload-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "40AIBH",
+        "Content-Length": "1232",
+        "Content-Type": "multipart/form-data; boundary=3b20fdc7455d0d9296edc23fabdb8ece"
+      },
+      "response": {
+        "status_code": 503,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 16:09:53 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "969"
+        },
+        "body": "{\"error\":\"database error: (pymysql.err.DataError) (1406, \\\"Data too long for column 'name' at row 1\\\")\\n[SQL: \\n                        INSERT INTO Documents (name, path, ownerid, sha256, size)\\n                        VALUES (%(name)s, %(path)s, %(ownerid)s, UNHEX(%(sha256hex)s), %(size)s)\\n                    ]\\n[parameters: {'name': '{\\\"\\\\\\\\udb58\\\\\\\\udc85\\\\\\\\u0082\\\\\\\\u00ea\\\\\\\\u0094\\\": {\\\"\\\\\\\\u00c5\\\": [{\\\"\\\\\\\\u001cZ\\\\\\\\u00b3*\\\\\\\\u0019\\\\\\\\udae4\\\\\\\\ude2e\\\\\\\\ud8da\\\\\\\\udea7%w\\\\\\\\u00c8\\\\\\\\ud886\\\\\\\\ude6a\\\": 3.869404758851402 ... (182 characters truncated) ... 5\\\\\\\\u00ce/\\\": [-3.2917878982376852e+16]}, \\\"G5\\\\\\\\u0083\\\\\\\\u2b98\\\\\\\\u00f8O\\\\\\\\udbf3\\\\\\\\udc39\\\\\\\\u00d9\\\": [[-1.1023149501713894e+16, -41309, 9675], -30302064590, {}]}', 'path': '/app/storage/files/fuzzes/20261015T160952995604Z__file', 'ownerid': 7, 'sha256hex': '84598f934759d5be680a6cc05a4691fddbc02a3c84a8a50afc2948c64fe0c9de', 'size': 13}]\\n(Background on this error at: https://sqlalche.me/e/20/9h9h)\"}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.013957700008177198,
+          "mode": "negative"
+        },
+        "components": {
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "- violates `type` at /properties/name/oneOf/1 (was integer, became object)\n- violates `format` at /properties/file",
+            "location": null,
+            "parameter": null,
+            "parameter_location": "BODY",
+            "mutations": [
+              {
+                "path": [
+                  "name"
+                ],
+                "parameter_location": "body",
+                "schema_pointer": "/properties/name/oneOf/1",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": "name",
+                "original_value": "integer",
+                "new_value": "object"
+              },
+              {
+                "path": [
+                  "file"
+                ],
+                "parameter_location": "body",
+                "schema_pointer": "/properties/file",
+                "channel": "schema",
+                "operator": "negate_constraints",
+                "keywords": [
+                  "format"
+                ],
+                "parameter": "file",
+                "original_value": null,
+                "new_value": null
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/upload-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "": [
+            "\u00b8",
+            true,
+            true
+          ],
+          "\u00e4": [],
+          "?\ud983\udf05r\u009d": [
+            {},
+            -808663491701549139968984612864,
+            {}
+          ],
+          "name": {
+            "\udb58\udc85\u0082\u00ea\u0094": {
+              "\u00c5": [
+                {
+                  "\u001cZ\u00b3*\u0019\udae4\ude2e\ud8da\udea7%w\u00c8\ud886\ude6a": 3.8694047588514024e+16,
+                  "<\ud9a6\udf93c\u00cd\ud8fc\udf30F\u00d9\u007f6e\udab6\ude0d\ud904\udc7a\u00f9l\ud9a2\udd54>\u000e\ud9be\udc8b": -3.2723290930243816e+16
+                },
+                false,
+                {}
+              ],
+              "\u00e5\u00ce/": [
+                -3.2917878982376852e+16
+              ]
+            },
+            "G5\u0083\u2b98\u00f8O\udbf3\udc39\u00d9": [
+              [
+                -1.1023149501713894e+16,
+                -41309,
+                9675
+              ],
+              -30302064590,
+              {}
+            ]
+          },
+          "file": "\u00de\ud8f4\udf97\udae7\udc41j\u0088"
+        }
+      },
+      "media_type": "multipart/form-data",
+      "parent_index": null
+    }
+  ]
+}

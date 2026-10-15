@@ -1,0 +1,92 @@
+{
+  "operation": "POST /api/upload-document",
+  "method": "OPTIONS",
+  "path_template": "/api/upload-document",
+  "fingerprint": "e839cece",
+  "case_id": "FG1iao",
+  "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=ae0583b436d82b4359a0c5c34a465f27' -d $'--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\ufffdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\ufffdU\\x00\\x00\\x00\\nIDATx\ufffdc`\\x00\\x00\\x00\\x02\\x00\\x01H\ufffd\ufffdq\\x00\\x00\\x00\\x00IEND\ufffdB`\ufffd\\r\\n--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n0\\r\\n--ae0583b436d82b4359a0c5c34a465f27--\\r\\n' http://localhost:5000/api/upload-document\n\n\u26a0\ufe0f  Request body contains non-printable characters. Actual value: b'--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\\xef\\xbf\\xbdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\\xef\\xbf\\xbdU\\x00\\x00\\x00\\nIDATx\\xef\\xbf\\xbdc`\\x00\\x00\\x00\\x02\\x00\\x01H\\xef\\xbf\\xbd\\xef\\xbf\\xbdq\\x00\\x00\\x00\\x00IEND\\xef\\xbf\\xbdB`\\xef\\xbf\\xbd\\r\\n--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n0\\r\\n--ae0583b436d82b4359a0c5c34a465f27--\\r\\n'",
+  "sequence": [
+    {
+      "method": "OPTIONS",
+      "url": "http://localhost:5000/api/upload-document",
+      "url_template": "http://localhost:5000/api/upload-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "FG1iao",
+        "Content-Length": "297",
+        "Content-Type": "multipart/form-data; boundary=749c31ecc79e669ad5c46500e420fd93"
+      },
+      "response": {
+        "status_code": 200,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 16:09:52 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "HEAD, POST, GET, OPTIONS",
+          "content-length": "0"
+        },
+        "body": ""
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "allow_header_conformance",
+          "status": "failure",
+          "message": "Invalid Allow header\n\n`Allow` header does not match the schema \u2014 undocumented methods advertised: GET\n\nList exactly the methods this resource supports in `Allow`"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.1299998732283711e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "HEADER": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: OPTIONS",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "HEADER": {
+            "Authorization": "Bearer "
+          }
+        }
+      },
+      "path": "/api/upload-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "file": "",
+          "name": 0
+        }
+      },
+      "media_type": "multipart/form-data",
+      "parent_index": null
+    }
+  ]
+}

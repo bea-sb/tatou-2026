@@ -1,0 +1,102 @@
+{
+  "operation": "POST /api/upload-document",
+  "method": "POST",
+  "path_template": "/api/upload-document",
+  "fingerprint": "3d199823",
+  "case_id": "LfwaeT",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=89c7dfc3a6da9e010005c3b5998570a2' -d $'--89c7dfc3a6da9e010005c3b5998570a2\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n-3.422763186466464e+16\\r\\n--89c7dfc3a6da9e010005c3b5998570a2\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file\"\\r\\n\\r\\n\\x06\ufffd\\r\\n--89c7dfc3a6da9e010005c3b5998570a2--\\r\\n' http://localhost:5000/api/upload-document\n\n\u26a0\ufe0f  Request body contains non-printable characters. Actual value: b'--89c7dfc3a6da9e010005c3b5998570a2\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n-3.422763186466464e+16\\r\\n--89c7dfc3a6da9e010005c3b5998570a2\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file\"\\r\\n\\r\\n\\x06\\xef\\xbf\\xbd\\r\\n--89c7dfc3a6da9e010005c3b5998570a2--\\r\\n'",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/upload-document",
+      "url_template": "http://localhost:5000/api/upload-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "LfwaeT",
+        "Content-Length": "249",
+        "Content-Type": "multipart/form-data; boundary=0cda0e0b95a7f87831ca87bd3f85041b"
+      },
+      "response": {
+        "status_code": 201,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 14:01:45 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "167"
+        },
+        "body": "{\"creation\":\"2026-10-15T14:01:45.615574\",\"id\":46,\"name\":\"-3.422763186466464e+16\",\"sha256\":\"BD29E6CA613CA4398C06021CD675CA22DA7E85C3250D4C85364B68B56B841283\",\"size\":2}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "negative_data_rejection",
+          "status": "failure",
+          "message": "API accepted schema-violating request\n\nInvalid data should have been rejected\nExpected: 400, 401, 403, 404, 405, 406, 409, 415, 422, 428, 429, 5xx\nInvalid component: in body - violates `type` at /properties/name (was string, became number)"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.005569900007685646,
+          "mode": "negative"
+        },
+        "components": {
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "violates `type` at /properties/name (was string, became number)",
+            "location": "/properties/name",
+            "parameter": "name",
+            "parameter_location": "BODY",
+            "mutations": [
+              {
+                "path": [
+                  "name"
+                ],
+                "parameter_location": "body",
+                "schema_pointer": "/properties/name",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": "name",
+                "original_value": "string",
+                "new_value": "number"
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/upload-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "name": -3.422763186466464e+16,
+          "file": ""
+        }
+      },
+      "media_type": "multipart/form-data",
+      "parent_index": null
+    }
+  ]
+}

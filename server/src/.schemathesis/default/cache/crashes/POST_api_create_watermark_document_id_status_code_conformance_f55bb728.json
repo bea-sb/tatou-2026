@@ -1,0 +1,146 @@
+{
+  "operation": "POST /api/create-watermark/{document_id}",
+  "method": "POST",
+  "path_template": "/api/create-watermark/{document_id}",
+  "fingerprint": "f55bb728",
+  "case_id": "gjNN85",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"\\u0081z\\u527a\\u0089\\u00e1T`\\u0005\\u00a9!\\u0004{\\u0084\\u9874S\\udad5\\udc23\": [\"\"], \"QS\\udbac\\udf68\\u0012\": {}, \"\\udba6\\udd49\\ud829\\udda1\\u0012&~\\u00a1\\u00ca\\u00f1\\ud9f0\\udf3a\\u00fe\\u00f9\": {\"\": [null]}, \"\\u00d9\\u0000~\\udacd\\ude6d\\u008c\\u00d5H\\u00fb\\u0016\\u00ae4\\u00a6\\u00d3\": [], \"intended_for\": \"\", \"key\": \"[Filtered]\", \"secret\": \"[Filtered]\", \"position\": \"\"}' http://localhost:5000/api/create-watermark/5.0520800466576105e-143",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/create-watermark/5.0520800466576105e-143",
+      "url_template": "http://localhost:5000/api/create-watermark/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "gjNN85",
+        "Content-Type": "application/json",
+        "Content-Length": "340"
+      },
+      "response": {
+        "status_code": 405,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Wed, 14 Oct 2026 14:13:13 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "OPTIONS, GET, HEAD",
+          "content-length": "153"
+        },
+        "body": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 405\nDocumented: 201, 400, 401, 404"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.25704140000016196,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "negative",
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "- path: violates `type` at /properties/document_id (was integer, became number)\n- body: violates `required` (was \"\")",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": [
+              {
+                "path": [
+                  "document_id"
+                ],
+                "parameter_location": "path",
+                "schema_pointer": "/properties/document_id",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": "document_id",
+                "original_value": "integer",
+                "new_value": "number"
+              },
+              {
+                "path": [],
+                "parameter_location": "body",
+                "schema_pointer": "",
+                "channel": "value",
+                "operator": "value_violator",
+                "keywords": [
+                  "required"
+                ],
+                "parameter": null,
+                "original_value": "",
+                "new_value": {
+                  "\u0081z\u527a\u0089\u00e1T`\u0005\u00a9!\u0004{\u0084\u9874S\udad5\udc23": [
+                    ""
+                  ],
+                  "QS\udbac\udf68\u0012": {},
+                  "\udba6\udd49\ud829\udda1\u0012&~\u00a1\u00ca\u00f1\ud9f0\udf3a\u00fe\u00f9": {
+                    "": [
+                      null
+                    ]
+                  },
+                  "\u00d9\u0000~\udacd\ude6d\u008c\u00d5H\u00fb\u0016\u00ae4\u00a6\u00d3": [],
+                  "intended_for": "",
+                  "key": "",
+                  "secret": "",
+                  "position": ""
+                }
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/create-watermark/{document_id}",
+      "path_parameters": {
+        "document_id": 5.0520800466576105e-143
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "\u0081z\u527a\u0089\u00e1T`\u0005\u00a9!\u0004{\u0084\u9874S\udad5\udc23": [
+            ""
+          ],
+          "QS\udbac\udf68\u0012": {},
+          "\udba6\udd49\ud829\udda1\u0012&~\u00a1\u00ca\u00f1\ud9f0\udf3a\u00fe\u00f9": {
+            "": [
+              null
+            ]
+          },
+          "\u00d9\u0000~\udacd\ude6d\u008c\u00d5H\u00fb\u0016\u00ae4\u00a6\u00d3": [],
+          "intended_for": "",
+          "key": "[Filtered]",
+          "secret": "[Filtered]",
+          "position": ""
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

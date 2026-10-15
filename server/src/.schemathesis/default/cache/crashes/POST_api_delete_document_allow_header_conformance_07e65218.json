@@ -1,0 +1,96 @@
+{
+  "operation": "POST /api/delete-document",
+  "method": "OPTIONS",
+  "path_template": "/api/delete-document",
+  "fingerprint": "07e65218",
+  "case_id": "FDiGJu",
+  "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"id\": 0}' http://localhost:5000/api/delete-document",
+  "sequence": [
+    {
+      "method": "OPTIONS",
+      "url": "http://localhost:5000/api/delete-document",
+      "url_template": "http://localhost:5000/api/delete-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "FDiGJu",
+        "Content-Type": "application/json",
+        "Content-Length": "9"
+      },
+      "response": {
+        "status_code": 200,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 16:09:52 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "HEAD, DELETE, POST, GET, OPTIONS",
+          "content-length": "0"
+        },
+        "body": ""
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "allow_header_conformance",
+          "status": "failure",
+          "message": "Invalid Allow header\n\n`Allow` header does not match the schema \u2014 undocumented methods advertised: GET\n\nList exactly the methods this resource supports in `Allow`"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.340000017080456e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "HEADER": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: OPTIONS",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "body",
+            "id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "HEADER": {
+            "Authorization": "Bearer "
+          }
+        }
+      },
+      "path": "/api/delete-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "id": 0
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

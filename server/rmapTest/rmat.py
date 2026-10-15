@@ -7,7 +7,13 @@ import os
 #24 is unreachable as of right now
 #nr 3 is getting us one too!!! YIPPIE
 
-TARGET_GROUP = "07"
+#5 no work yet but accesable by healthz
+
+#11 reachable but no rmap
+
+#reachable not rmap 15
+
+TARGET_GROUP = "29"
 MY_IDENTITY = "Group_07"
 
 BASE_URL = (
@@ -19,8 +25,8 @@ PASSPHRASE = os.environ.get("PASSPHRASE")
 if not PASSPHRASE:
     raise RuntimeError("PASSPHRASE is empty")
 
-CLIENT_PRIVATE_KEY = "../keys/server_priv.asc"
-SERVER_PUBLIC_KEY = "../keys/clients/Group_07.asc"
+CLIENT_PRIVATE_KEY = "../keys/server_priv.asc" #our private key
+SERVER_PUBLIC_KEY = "../keys/clients/Group_29.asc" #theirs
 
 #route requests through tunnel putty socks5 tunnel
 session = requests.Session()

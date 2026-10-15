@@ -1,0 +1,120 @@
+{
+  "operation": "POST /api/create-watermark/{document_id}",
+  "method": "POST",
+  "path_template": "/api/create-watermark/{document_id}",
+  "fingerprint": "45ed8fe8",
+  "case_id": "UefvqI",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"\\u00e6\\u0153\\u00c6\\u0152\\ufb00\\u02a4\\u02a8\\u00df\": {}, \"\\b\\u009a\\u00cd\\u0098yP\": [[-1115357444114], [{\"TRUE\": -3.499208151950076e+26, \"\\u00a5\\u00e4E\\u00f0C\\ud888\\ude97\\u00ad\\ud920\\ude2c\\udb64\\udc1f\\udb3e\\udf1c\": -192815843136813203456, \"\": true}], {\"\\udb72\\udcfa\\u0017\\ud95d\\udf38\\u00bef\\u00c3wb\\u0092c\\u00c7\\u00ac\\u00e6(\": {}}], \"\": {}, \"s\\u0019\\u0099\": [\"\\ud977\\udf7f\\ud953\\udc4d\\u0003|\\u00c6\\uda74\\udfec\\u001f\", -19854107413187780], \"\\u00f9\": [{\"B\\u00fa\\u001b&\": \"\\u008c\\u00f6\\ud896\\udd80\\uda33\\udff1\", \"\": -6255}, []], \"intended_for\": \"\\uda65\\udcb6\\u00ed\\ud89b\\ude8a\\u00ed\", \"secret\": \"[Filtered]\", \"method\": \"b.\", \"key\": \"[Filtered]\", \"position\": \"\\ud970\\ude0b\\udbce\\ude4e\\uda25\\udfcd\"}' http://localhost:5000/api/create-watermark/120",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/create-watermark/120",
+      "url_template": "http://localhost:5000/api/create-watermark/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "UefvqI",
+        "Content-Type": "application/json",
+        "Content-Length": "681"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Wed, 14 Oct 2026 14:13:16 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "49"
+        },
+        "body": "{\"error\":\"method, secret, and key are required\"}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx\nHint: The request body contains 5 additional properties not defined in the schema (``, `\b\u009a\u00cd\u0098yP`, `s\u0019\u0099` and 2 more). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields."
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.013266299999941111,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "stateful",
+          "data": {
+            "type": "StatefulPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/create-watermark/{document_id}",
+      "path_parameters": {
+        "document_id": 120
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "\u00e6\u0153\u00c6\u0152\ufb00\u02a4\u02a8\u00df": {},
+          "\b\u009a\u00cd\u0098yP": [
+            [
+              -1115357444114
+            ],
+            [
+              {
+                "TRUE": -3.499208151950076e+26,
+                "\u00a5\u00e4E\u00f0C\ud888\ude97\u00ad\ud920\ude2c\udb64\udc1f\udb3e\udf1c": -192815843136813203456,
+                "": true
+              }
+            ],
+            {
+              "\udb72\udcfa\u0017\ud95d\udf38\u00bef\u00c3wb\u0092c\u00c7\u00ac\u00e6(": {}
+            }
+          ],
+          "": {},
+          "s\u0019\u0099": [
+            "\ud977\udf7f\ud953\udc4d\u0003|\u00c6\uda74\udfec\u001f",
+            -19854107413187780
+          ],
+          "\u00f9": [
+            {
+              "B\u00fa\u001b&": "\u008c\u00f6\ud896\udd80\uda33\udff1",
+              "": -6255
+            },
+            []
+          ],
+          "intended_for": "\uda65\udcb6\u00ed\ud89b\ude8a\u00ed",
+          "secret": "[Filtered]",
+          "method": "b.",
+          "key": "[Filtered]",
+          "position": "\ud970\ude0b\udbce\ude4e\uda25\udfcd"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

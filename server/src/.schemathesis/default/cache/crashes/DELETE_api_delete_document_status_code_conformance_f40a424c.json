@@ -1,0 +1,392 @@
+{
+  "operation": "DELETE /api/delete-document",
+  "method": "DELETE",
+  "path_template": "/api/delete-document",
+  "fingerprint": "f40a424c",
+  "case_id": "G1uJ3q",
+  "code_sample": "curl -X DELETE -H 'Authorization: [Filtered]' 'http://localhost:5000/api/delete-document?id=false&id=%1A%C3%A3%C3%B3&id=false&id=%C3%B0&id=-1.1250554401391644e%2B104&id=&id=%C3%BD%C3%AD%C2%95%14%00%C2%AF%F2%B5%BB%B3%C2%89%C2%A9%F0%A8%BE%8Bs&id=%C3%8C%1B%F3%81%8F%A5h%F2%8E%9E%8F%C2%86&id=%C2%85%C2%A3P%00%C3%B5%F1%8B%9E%89%F2%94%83%910%F1%96%88%9E%2B%0D%C3%AC%C2%87%F1%92%BC%8F%1B&id=%F3%82%BA%A5%C3%AE%F2%B3%BE%AE..%C3%AC%F2%8D%84%B2%F3%85%89%AD%C3%B8%C2%BC%F2%BB%A9%99%C3%AC%07%F0%A0%99%89%F1%87%A9%98%5B%C2%91%F4%8F%9D%95%C2%88%F2%8D%92%BB%C2%A08%F3%84%AC%B4%F1%A2%AA%97L%C3%8A&id=%C3%B3%C3%A4%C3%B3%F3%85%B8%9B%F2%AF%A2%9F&id=false&id=-1.2607514783705469e%2B90&id=%7B%7D&id=%7B%27%2F%5Ct%5Cx90%5Cx15%C3%A8%5Cx7fs%5CU00051da2%5B%5CU000dbeb5%27%3A+4.611247746978394e%2B16%7D&id=%7B%7D&id=%5B%5D&id=%7B%27%5CU000ea836r%C2%A6%27%3A+%27%27%2C+%27%5C%5C%C3%90a%27%3A+-3.33039223060354e%2B187%2C+%27~B%5Cx11%C3%A1i%5CU0008a247%C2%A1%24b%5Cx01%5CU00046417%5Cx8e%5Cx1f%C3%BE%C3%A2%C3%8BZy%5CU0010a92d%C3%B9%5Cx8eET-%C2%A1%5CU000da93b%27%3A+6.60654018825858e%2B16%7D&id=%7B%27NIL%27%3A+%7B%27S%7C%5CU000bf87a%5Cx9d.W%5Cx7f%5CU00089da1v%5CU0003f3aaD%5Cx82%5CU0009b64aw%22%C2%A9H%5CU00073ee5%C3%A0%5CU000433d6f%5Cx91%5Cx90I%C3%8D%27%3A+%27null%27%2C+%27NUL%27%3A+-0.3333333333333333%7D%2C+%27%C3%99A%5Cx8enl%C2%B8%C2%A6%5Cx9fU%5CU00043950%C3%BE%27%3A+%27%5Cx12%C3%80%5Cx8cd%5Cx0c%27%2C+%27%3A%5CU000a21b0%5Cx1a%5CU00064bb2%5Cx01%27%3A+%27null%27%7D&id=%7B%27.%5Cxad%C3%83%C3%AE%27%3A+%7B%27e%27%3A+%27true%27%2C+%27B%C3%BA%5Cx8d7%5Cx1b%5Cx8f%27%3A+-1236485%2C+%27%5E%5CU000dd876_%5Cx1a%C3%84X%27%3A+%27null%27%7D%2C+%27%5Cx9b%5Cx10W%C3%88%7B4%27%3A+%27null%27%2C+%27%27%3A+%5B%5D%7D&id=false&id=M%C2%95%0D%C2%B4%2B%60qd%C2%8B%C2%9F&id=&id=%7B%0E%C3%BA%C3%B4%2F&id=%7B%7D&id=%5B%5B305%5D%5D&id=%7B%7D&id=null&id=%5B%7B%27%27%3A+21285285%2C+%27%C2%B1%C3%BA0Ud%C3%86%27%3A+%27null%27%2C+%27x%27%3A+%27null%27%7D%2C+%27%C2%A6%5CU000e8442%C3%B9%5CU0004e6c5%C3%9E%5Cx87h%27%2C+%5B%5D%5D&id=%5B%27true%27%5D&id=%7B%7D&id=%7B%27%C2%BBHd%C3%B5%C3%BE%F0%A9%BA%B3%C3%A6%5Cx96%C3%80%5Cx8b%27%3A+%27True%27%7D&id=%5B%7B%7D%5D&id=-9531024687144446.0&id=%7B%27%5CU00108a44%5CU0001dac8%C2%BB%27%3A+-364249%7D&id=%7B%27%27%3A+%27null%27%2C+%27B%5Cx14%5CU000e29cf%22j%5Cx01%5CU00091eef%5CU00068abcE%5CU000edf8c%5Cx07%5Cx98%C3%92%27%3A+203395819%2C+%27%5CU0001c5aaM7%5Cx97r%C3%97%27%3A+%27null%27%7D&id=%5B%5B%5B%27false%27%2C+131038815246%2C+1241352%5D%5D%2C+-5715909%5D&id=%C2%83%C3%AB&id=%C2%8E%C2%99%C2%B7%C3%A3%C3%B0%C2%A6%2F%C2%B3%17e%C3%8D%C2%8F&id=%7B%27%5Cx0e%27%3A+%7B%27B%27%3A+2673%2C+%27N_%3A%24i%C3%BA%27%3A+%27false%27%2C+%27P%27%3A+-2579%7D%2C+%27%5Cx9fu.%27%3A+%7B%272%27%3A+-5.783594218463741e%2B16%7D%7D&id=%7B%27p%C3%A3%C3%83%2B%27%3A+%27true%27%2C+%27%C3%A72%5Cx18%C2%A8o%5Cx10%5CU0008116b%5CU00067d4b%27%3A+-21394256597802%2C+%27L%5CU000a74e3zD%C3%86%3Cb%5Cx07%5Cx98M%5Cx93%C2%BC%C2%B5%5CU000a505b%5CU00082387%2Cv~%27%3A+%27null%27%7D&id=%7B%7D&id=%7B%27%5CU0004372c%27%3A+%27%5Cx04%5CU000524b6%27%2C+%27%27%3A+%27false%27%7D&id=%7B%27%5CU000796ea%3F%5CU000bde60%5Cx80TFF%27%3A+%5B%5D%2C+%27%27%3A+%5B%27null%27%5D%2C+%27LPT1%27%3A+%7B%27%C3%8F%2B%27%3A+%27%27%2C+%27%28_%C3%A2%5Cx1c%C3%A3%27%3A+498275%2C+%27M%5CU000742cb%5Cx9d%C2%BD%27%3A+%27null%27%7D%7D&id=%5B%5D&id=%7B%7D&id=%5B-1.1495878220150904e%2B16%2C+%27null%27%2C+%27false%27%5D&id=%5B%7B%7D%2C+%27true%27%2C+%5B%27a%5CU000c6101%C3%81%7D%5CU00062bc0%5CU000326a1%5Cx87AY%C3%B9%5Cx11%5Cx88%3E%C2%BD%5Cx95%C3%BE%C3%A6%C3%9A%C3%8A%5CU000dd64aF%5Cx1d%5Cx10%C3%BB%5C%5C%3D%C3%85%5Cx90%C3%AA%27%2C+%27true%27%2C+-87380%5D%5D&id=%5B%27null%27%5D&id=%7B%7D&id=%5B-2.9301455850043287e-56%2C+%27%5CU000bda9a%5Cx10%C3%9D%5CU000fc7c4%C3%B7%C3%BB%C2%B4zb2%5Cx99%5CU0008d714%C3%88y%C3%BB%C3%89%C3%9140%C3%A9%C2%B9%5Cx11%60%5CU0009deb4%5Cx9a%C2%AE-%27%2C+%7B%27%27%3A+%27true%27%2C+%27~%5CU000c557a%C2%B7%5Cx8b%5Cx90%C2%B8%C3%86%27%3A+%27true%27%2C+%27%5CU00032eb0%5CU00047efcc%2Ay%5Cx04%7B%27%3A+%27false%27%7D%5D&id=%7B%27%C3%8B%C3%878a%5Cx9d%27%3A+%7B%27%C2%B8%C3%8Fee%5CU00069fd3%2A%5Cx8aj%7D%C2%A3%27%3A+%27%27%7D%2C+%27%27%3A+%27null%27%2C+%27%24%C3%AC%C3%89%25%27%3A+%27null%27%7D&id=%7B%27%25%5CU000667c0%27%3A+%7B%7D%2C+%27%C3%B8%5Cxa0D%F0%9D%83%9DW%7C%C2%B5%27%3A+-491282834%2C+%27%5Cx1e%C3%B0%C3%86%27%3A+%5B5.2001169889455336e%2B16%2C+%27false%27%2C+40296564%5D%7D&id=%5B%5B%27false%27%5D%2C+%7B%27%C2%AC%C3%AA%C2%B6%27%3A+-1952802545722%2C+%27%C3%BF%5Cx1a%C3%91%27%3A+%27%C2%AF%5Cx16F%29%C3%91%5CU000330fa%5CU00056ccb%27%2C+%27%27%3A+5852369014238849.0%7D%5D&id=%7B%27%5CU000d7789%22%27%3A+%27~%C3%B2%C3%9Cp%27%2C+%27%C3%86%F0%97%A1%8E%3D%C3%A7%C2%A6%25%5CU000a7e61fQ%27%3A+%5B%5D%2C+%27%E5%98%AF%27%3A+%27%5Cx07%5CU0004c52c%C3%92%5CU0003acd7%D8%A5%C3%A2%5Cx9f%C2%BE%5CU000ca30f%C3%93t%3D%5Cx84%5CU00098857g%C3%8A%C3%A1%F0%AB%A3%9C%C3%9B%27%7D&id=true&id=true&id=%5B%27true%27%5D&id=%7B%27%C3%A0%C3%8C%C3%89%5CU0007d55b%5Cx8e%C2%BB%C3%9C%27%3A+%5B%5D%2C+%27%5Cx19%5CU00088ee1%5Cxad%5Cx96%27%3A+4194305%2C+%27NIL%27%3A+%7B%27%C3%99%25%5Cx192%C2%B3r%3Ck%5CU000b97ea%5CU0009bf881%5Cx1cY%ED%98%A4%C3%9A%C3%B4%5CU000b22a5%C3%96%5Cx87o%C2%A3%5Cx15%5Cx00Nj%5CU000f89d2%C3%AE%5Cx07%5CU00035091%5Cxad%5Cx0c%C3%85A%C2%BB%27%3A+2174%7D%7D&id=%5B%5D&id=%5B%27true%27%2C+303267%5D&id=%C2%AF%F2%99%9E%B4%C3%8E1&id=-5.377512550568404e%2B93&id=%5B%7B%27W%5CU000977ac%5Cx08%5Cx0e%C3%98%C2%B8%27%3A+-64897%2C+%27%27%3A+%27null%27%7D%2C+%5B%5D%2C+%7B%7D%5D&id=%7B%27%5CU000bb86e%5CU000d2a0e%C3%AC%C3%B3f%5Cx1bi%EA%B6%99%27%3A+-1362%2C+%27%C3%A8%C3%9C%27%3A+%27%5Cx0f%5CU0002f14d%C2%BA%27%2C+%27%5CU000dc985%5Cx88%C2%B7%5Cx94%27%3A+%27true%27%7D&id=%5B%5D&id=%5B%5D&id=%5B%5D&id=false&id=-1.7976931348623157e%2B308&id=%7B%7D&id=null&id=null&id=null&id=%7B%27y%C2%B0%26N%5Cx08%C2%BE%F0%AA%8D%A0%C3%92%27%3A+%5B%5D%2C+%27%3F6%C3%86%5CU00041cc8%27%3A+%5B%5D%2C+%27%7C%5CU00048c5b%C3%81%27%3A+%5B%27null%27%5D%7D&id=%5B%5D&id=%5B2.2250738585072014e-308%5D&id=%7B%7D&id=%5B%5D'",
+  "sequence": [
+    {
+      "method": "DELETE",
+      "url": "http://localhost:5000/api/delete-document?id=false&id=%1A%C3%A3%C3%B3&id=false&id=%C3%B0&id=-1.1250554401391644e%2B104&id=&id=%C3%BD%C3%AD%C2%95%14%00%C2%AF%F2%B5%BB%B3%C2%89%C2%A9%F0%A8%BE%8Bs&id=%C3%8C%1B%F3%81%8F%A5h%F2%8E%9E%8F%C2%86&id=%C2%85%C2%A3P%00%C3%B5%F1%8B%9E%89%F2%94%83%910%F1%96%88%9E%2B%0D%C3%AC%C2%87%F1%92%BC%8F%1B&id=%F3%82%BA%A5%C3%AE%F2%B3%BE%AE..%C3%AC%F2%8D%84%B2%F3%85%89%AD%C3%B8%C2%BC%F2%BB%A9%99%C3%AC%07%F0%A0%99%89%F1%87%A9%98%5B%C2%91%F4%8F%9D%95%C2%88%F2%8D%92%BB%C2%A08%F3%84%AC%B4%F1%A2%AA%97L%C3%8A&id=%C3%B3%C3%A4%C3%B3%F3%85%B8%9B%F2%AF%A2%9F&id=false&id=-1.2607514783705469e%2B90&id=%7B%7D&id=%7B%27%2F%5Ct%5Cx90%5Cx15%C3%A8%5Cx7fs%5CU00051da2%5B%5CU000dbeb5%27%3A+4.611247746978394e%2B16%7D&id=%7B%7D&id=%5B%5D&id=%7B%27%5CU000ea836r%C2%A6%27%3A+%27%27%2C+%27%5C%5C%C3%90a%27%3A+-3.33039223060354e%2B187%2C+%27~B%5Cx11%C3%A1i%5CU0008a247%C2%A1%24b%5Cx01%5CU00046417%5Cx8e%5Cx1f%C3%BE%C3%A2%C3%8BZy%5CU0010a92d%C3%B9%5Cx8eET-%C2%A1%5CU000da93b%27%3A+6.60654018825858e%2B16%7D&id=%7B%27NIL%27%3A+%7B%27S%7C%5CU000bf87a%5Cx9d.W%5Cx7f%5CU00089da1v%5CU0003f3aaD%5Cx82%5CU0009b64aw%22%C2%A9H%5CU00073ee5%C3%A0%5CU000433d6f%5Cx91%5Cx90I%C3%8D%27%3A+%27null%27%2C+%27NUL%27%3A+-0.3333333333333333%7D%2C+%27%C3%99A%5Cx8enl%C2%B8%C2%A6%5Cx9fU%5CU00043950%C3%BE%27%3A+%27%5Cx12%C3%80%5Cx8cd%5Cx0c%27%2C+%27%3A%5CU000a21b0%5Cx1a%5CU00064bb2%5Cx01%27%3A+%27null%27%7D&id=%7B%27.%5Cxad%C3%83%C3%AE%27%3A+%7B%27e%27%3A+%27true%27%2C+%27B%C3%BA%5Cx8d7%5Cx1b%5Cx8f%27%3A+-1236485%2C+%27%5E%5CU000dd876_%5Cx1a%C3%84X%27%3A+%27null%27%7D%2C+%27%5Cx9b%5Cx10W%C3%88%7B4%27%3A+%27null%27%2C+%27%27%3A+%5B%5D%7D&id=false&id=M%C2%95%0D%C2%B4%2B%60qd%C2%8B%C2%9F&id=&id=%7B%0E%C3%BA%C3%B4%2F&id=%7B%7D&id=%5B%5B305%5D%5D&id=%7B%7D&id=null&id=%5B%7B%27%27%3A+21285285%2C+%27%C2%B1%C3%BA0Ud%C3%86%27%3A+%27null%27%2C+%27x%27%3A+%27null%27%7D%2C+%27%C2%A6%5CU000e8442%C3%B9%5CU0004e6c5%C3%9E%5Cx87h%27%2C+%5B%5D%5D&id=%5B%27true%27%5D&id=%7B%7D&id=%7B%27%C2%BBHd%C3%B5%C3%BE%F0%A9%BA%B3%C3%A6%5Cx96%C3%80%5Cx8b%27%3A+%27True%27%7D&id=%5B%7B%7D%5D&id=-9531024687144446.0&id=%7B%27%5CU00108a44%5CU0001dac8%C2%BB%27%3A+-364249%7D&id=%7B%27%27%3A+%27null%27%2C+%27B%5Cx14%5CU000e29cf%22j%5Cx01%5CU00091eef%5CU00068abcE%5CU000edf8c%5Cx07%5Cx98%C3%92%27%3A+203395819%2C+%27%5CU0001c5aaM7%5Cx97r%C3%97%27%3A+%27null%27%7D&id=%5B%5B%5B%27false%27%2C+131038815246%2C+1241352%5D%5D%2C+-5715909%5D&id=%C2%83%C3%AB&id=%C2%8E%C2%99%C2%B7%C3%A3%C3%B0%C2%A6%2F%C2%B3%17e%C3%8D%C2%8F&id=%7B%27%5Cx0e%27%3A+%7B%27B%27%3A+2673%2C+%27N_%3A%24i%C3%BA%27%3A+%27false%27%2C+%27P%27%3A+-2579%7D%2C+%27%5Cx9fu.%27%3A+%7B%272%27%3A+-5.783594218463741e%2B16%7D%7D&id=%7B%27p%C3%A3%C3%83%2B%27%3A+%27true%27%2C+%27%C3%A72%5Cx18%C2%A8o%5Cx10%5CU0008116b%5CU00067d4b%27%3A+-21394256597802%2C+%27L%5CU000a74e3zD%C3%86%3Cb%5Cx07%5Cx98M%5Cx93%C2%BC%C2%B5%5CU000a505b%5CU00082387%2Cv~%27%3A+%27null%27%7D&id=%7B%7D&id=%7B%27%5CU0004372c%27%3A+%27%5Cx04%5CU000524b6%27%2C+%27%27%3A+%27false%27%7D&id=%7B%27%5CU000796ea%3F%5CU000bde60%5Cx80TFF%27%3A+%5B%5D%2C+%27%27%3A+%5B%27null%27%5D%2C+%27LPT1%27%3A+%7B%27%C3%8F%2B%27%3A+%27%27%2C+%27%28_%C3%A2%5Cx1c%C3%A3%27%3A+498275%2C+%27M%5CU000742cb%5Cx9d%C2%BD%27%3A+%27null%27%7D%7D&id=%5B%5D&id=%7B%7D&id=%5B-1.1495878220150904e%2B16%2C+%27null%27%2C+%27false%27%5D&id=%5B%7B%7D%2C+%27true%27%2C+%5B%27a%5CU000c6101%C3%81%7D%5CU00062bc0%5CU000326a1%5Cx87AY%C3%B9%5Cx11%5Cx88%3E%C2%BD%5Cx95%C3%BE%C3%A6%C3%9A%C3%8A%5CU000dd64aF%5Cx1d%5Cx10%C3%BB%5C%5C%3D%C3%85%5Cx90%C3%AA%27%2C+%27true%27%2C+-87380%5D%5D&id=%5B%27null%27%5D&id=%7B%7D&id=%5B-2.9301455850043287e-56%2C+%27%5CU000bda9a%5Cx10%C3%9D%5CU000fc7c4%C3%B7%C3%BB%C2%B4zb2%5Cx99%5CU0008d714%C3%88y%C3%BB%C3%89%C3%9140%C3%A9%C2%B9%5Cx11%60%5CU0009deb4%5Cx9a%C2%AE-%27%2C+%7B%27%27%3A+%27true%27%2C+%27~%5CU000c557a%C2%B7%5Cx8b%5Cx90%C2%B8%C3%86%27%3A+%27true%27%2C+%27%5CU00032eb0%5CU00047efcc%2Ay%5Cx04%7B%27%3A+%27false%27%7D%5D&id=%7B%27%C3%8B%C3%878a%5Cx9d%27%3A+%7B%27%C2%B8%C3%8Fee%5CU00069fd3%2A%5Cx8aj%7D%C2%A3%27%3A+%27%27%7D%2C+%27%27%3A+%27null%27%2C+%27%24%C3%AC%C3%89%25%27%3A+%27null%27%7D&id=%7B%27%25%5CU000667c0%27%3A+%7B%7D%2C+%27%C3%B8%5Cxa0D%F0%9D%83%9DW%7C%C2%B5%27%3A+-491282834%2C+%27%5Cx1e%C3%B0%C3%86%27%3A+%5B5.2001169889455336e%2B16%2C+%27false%27%2C+40296564%5D%7D&id=%5B%5B%27false%27%5D%2C+%7B%27%C2%AC%C3%AA%C2%B6%27%3A+-1952802545722%2C+%27%C3%BF%5Cx1a%C3%91%27%3A+%27%C2%AF%5Cx16F%29%C3%91%5CU000330fa%5CU00056ccb%27%2C+%27%27%3A+5852369014238849.0%7D%5D&id=%7B%27%5CU000d7789%22%27%3A+%27~%C3%B2%C3%9Cp%27%2C+%27%C3%86%F0%97%A1%8E%3D%C3%A7%C2%A6%25%5CU000a7e61fQ%27%3A+%5B%5D%2C+%27%E5%98%AF%27%3A+%27%5Cx07%5CU0004c52c%C3%92%5CU0003acd7%D8%A5%C3%A2%5Cx9f%C2%BE%5CU000ca30f%C3%93t%3D%5Cx84%5CU00098857g%C3%8A%C3%A1%F0%AB%A3%9C%C3%9B%27%7D&id=true&id=true&id=%5B%27true%27%5D&id=%7B%27%C3%A0%C3%8C%C3%89%5CU0007d55b%5Cx8e%C2%BB%C3%9C%27%3A+%5B%5D%2C+%27%5Cx19%5CU00088ee1%5Cxad%5Cx96%27%3A+4194305%2C+%27NIL%27%3A+%7B%27%C3%99%25%5Cx192%C2%B3r%3Ck%5CU000b97ea%5CU0009bf881%5Cx1cY%ED%98%A4%C3%9A%C3%B4%5CU000b22a5%C3%96%5Cx87o%C2%A3%5Cx15%5Cx00Nj%5CU000f89d2%C3%AE%5Cx07%5CU00035091%5Cxad%5Cx0c%C3%85A%C2%BB%27%3A+2174%7D%7D&id=%5B%5D&id=%5B%27true%27%2C+303267%5D&id=%C2%AF%F2%99%9E%B4%C3%8E1&id=-5.377512550568404e%2B93&id=%5B%7B%27W%5CU000977ac%5Cx08%5Cx0e%C3%98%C2%B8%27%3A+-64897%2C+%27%27%3A+%27null%27%7D%2C+%5B%5D%2C+%7B%7D%5D&id=%7B%27%5CU000bb86e%5CU000d2a0e%C3%AC%C3%B3f%5Cx1bi%EA%B6%99%27%3A+-1362%2C+%27%C3%A8%C3%9C%27%3A+%27%5Cx0f%5CU0002f14d%C2%BA%27%2C+%27%5CU000dc985%5Cx88%C2%B7%5Cx94%27%3A+%27true%27%7D&id=%5B%5D&id=%5B%5D&id=%5B%5D&id=false&id=-1.7976931348623157e%2B308&id=%7B%7D&id=null&id=null&id=null&id=%7B%27y%C2%B0%26N%5Cx08%C2%BE%F0%AA%8D%A0%C3%92%27%3A+%5B%5D%2C+%27%3F6%C3%86%5CU00041cc8%27%3A+%5B%5D%2C+%27%7C%5CU00048c5b%C3%81%27%3A+%5B%27null%27%5D%7D&id=%5B%5D&id=%5B2.2250738585072014e-308%5D&id=%7B%7D&id=%5B%5D",
+      "url_template": "http://localhost:5000/api/delete-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "G1uJ3q",
+        "Content-Length": "0"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "connection": "close",
+          "content-type": "text/html",
+          "content-length": "163"
+        },
+        "body": "<html>\n  <head>\n    <title>Bad Request</title>\n  </head>\n  <body>\n    <h1><p>Bad Request</p></h1>\n    Request Line is too large (5854 &gt; 4094)\n  </body>\n</html>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 400\nDocumented: 200, 401, 404, 503"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.06723349999811035,
+          "mode": "negative"
+        },
+        "components": {
+          "QUERY": "negative"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "violates `type` at /properties/id (was integer, became array)",
+            "location": "/properties/id",
+            "parameter": "id",
+            "parameter_location": "QUERY",
+            "mutations": [
+              {
+                "path": [
+                  "id"
+                ],
+                "parameter_location": "query",
+                "schema_pointer": "/properties/id",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": "id",
+                "original_value": "integer",
+                "new_value": "array"
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/delete-document",
+      "path_parameters": {},
+      "query": {
+        "id": [
+          "false",
+          "\u001a\u00e3\u00f3",
+          "false",
+          "\u00f0",
+          -1.1250554401391644e+104,
+          {
+            "": [
+              []
+            ],
+            "\u00fd\u00ed\u0095\u0014\u0000\u00af\uda97\udef3\u0089\u00a9\ud863\udf8bs": {},
+            "\u00cc\u001b\udac4\udfe5h\ud9f9\udf8f\u0086": [
+              {},
+              {
+                "": -1.1,
+                "\u0093": "false",
+                "\udaac\udf44\uda4b\udc52By\u00e2\udb44\udd88\ud9d1\udcd9\u0095:\u00e3\u009d\u00aee\u00dbw": -4.127058705660171e+267
+              }
+            ],
+            "\u0085\u00a3P\u0000\u00f5\ud8ed\udf89\uda10\udcd10\ud918\ude1e+\r\u00ec\u0087\ud90b\udf0f\u001b": "false",
+            "\udacb\udea5\u00ee\uda8f\udfae..\u00ec\ud9f4\udd32\udad4\ude6d\u00f8\u00bc\udaae\ude59\u00ec\u0007\ud841\ude49\ud8de\ude58[\u0091\udbfd\udf55\u0088\ud9f5\udcbb\u00a08\udad2\udf34\ud94a\ude97L\u00ca": [
+              "null",
+              {},
+              {
+                "\u0090\u00edR\uda7e\udccf1\udacf\ude59\ud81d\udf35\udb37\udd0f": -6.871037663942459e+16,
+                "\u0098lv": 2.75183338342967e-89,
+                "A": "null"
+              }
+            ],
+            "\u00f3\u00e4\u00f3\udad7\ude1b\uda7e\udc9f": [
+              1.4085666535307028e-260
+            ]
+          },
+          "false",
+          -1.2607514783705469e+90,
+          [
+            {},
+            {
+              "/\t\u0090\u0015\u00e8\u007fs\ud907\udda2[\udb2f\udeb5": 4.611247746978394e+16
+            },
+            {},
+            [],
+            {
+              "\udb6a\udc36r\u00a6": "",
+              "\\\u00d0a": -3.33039223060354e+187,
+              "~B\u0011\u00e1i\ud9e8\ude47\u00a1$b\u0001\ud8d9\udc17\u008e\u001f\u00fe\u00e2\u00cbZy\udbea\udd2d\u00f9\u008eET-\u00a1\udb2a\udd3b": 6.60654018825858e+16
+            },
+            {
+              "NIL": {
+                "S|\udabe\udc7a\u009d.W\u007f\ud9e7\udda1v\ud8bc\udfaaD\u0082\uda2d\ude4aw\"\u00a9H\ud98f\udee5\u00e0\ud8cc\udfd6f\u0091\u0090I\u00cd": "null",
+                "NUL": -0.3333333333333333
+              },
+              "\u00d9A\u008enl\u00b8\u00a6\u009fU\ud8ce\udd50\u00fe": "\u0012\u00c0\u008cd\f",
+              ":\uda48\uddb0\u001a\ud952\udfb2\u0001": "null"
+            },
+            {
+              ".\u00ad\u00c3\u00ee": {
+                "e": "true",
+                "B\u00fa\u008d7\u001b\u008f": -1236485,
+                "^\udb36\udc76_\u001a\u00c4X": "null"
+              },
+              "\u009b\u0010W\u00c8{4": "null",
+              "": []
+            }
+          ],
+          "false",
+          {
+            "M\u0095\r\u00b4+`qd\u008b\u009f": -5.533553518197891e+16,
+            "": {
+              "": [
+                6434620627506200.0
+              ],
+              "\u007f%:G\u00d96\udb61\uddc8\u0081;\u0089<\u00a9": {
+                "\udb84\ude21\u0093\udb71\udc34\u00ca\u00d3\u0013": "false",
+                "Y\u00b3\u00fe\u000bHv\u00dc\u001b\u00c9\ud838\ude7f\u00ea\u001d\u0014+\u007f\ud886\udcdd\u00f4\u0015\u00c3": -1.1754943508222875e-38,
+                ";_": "\u001b\u0005\u0018q"
+              }
+            },
+            "{\u000e\u00fa\u00f4/": [
+              [
+                [
+                  3.0328149717059376e+16
+                ],
+                [
+                  -2.3547016763008136e+16,
+                  1526669827,
+                  -4154
+                ],
+                "null"
+              ]
+            ]
+          },
+          [
+            {},
+            [
+              [
+                305
+              ]
+            ],
+            {},
+            "null"
+          ],
+          [
+            [
+              {
+                "": 21285285,
+                "\u00b1\u00fa0Ud\u00c6": "null",
+                "x": "null"
+              },
+              "\u00a6\udb61\udc42\u00f9\ud8f9\udec5\u00de\u0087h",
+              []
+            ],
+            [
+              "true"
+            ],
+            {},
+            {
+              "\u00bbHd\u00f5\u00fe\ud867\udeb3\u00e6\u0096\u00c0\u008b": "True"
+            },
+            [
+              {}
+            ],
+            -9531024687144446.0,
+            {
+              "\udbe2\ude44\ud836\udec8\u00bb": -364249
+            },
+            {
+              "": "null",
+              "B\u0014\udb4a\uddcf\"j\u0001\uda07\udeef\ud962\udebcE\udb77\udf8c\u0007\u0098\u00d2": 203395819,
+              "\ud831\uddaaM7\u0097r\u00d7": "null"
+            },
+            [
+              [
+                [
+                  "false",
+                  131038815246,
+                  1241352
+                ]
+              ],
+              -5715909
+            ],
+            "\u0083\u00eb",
+            "\u008e\u0099\u00b7\u00e3\u00f0\u00a6/\u00b3\u0017e\u00cd\u008f",
+            {
+              "\u000e": {
+                "B": 2673,
+                "N_:$i\u00fa": "false",
+                "P": -2579
+              },
+              "\u009fu.": {
+                "2": -5.783594218463741e+16
+              }
+            },
+            {
+              "p\u00e3\u00c3+": "true",
+              "\u00e72\u0018\u00a8o\u0010\ud9c4\udd6b\ud95f\udd4b": -21394256597802,
+              "L\uda5d\udce3zD\u00c6<b\u0007\u0098M\u0093\u00bc\u00b5\uda54\udc5b\ud9c8\udf87,v~": "null"
+            }
+          ],
+          [
+            {},
+            {
+              "\ud8cd\udf2c": "\u0004\ud909\udcb6",
+              "": "false"
+            },
+            {
+              "\ud9a5\udeea?\udab7\ude60\u0080TFF": [],
+              "": [
+                "null"
+              ],
+              "LPT1": {
+                "\u00cf+": "",
+                "(_\u00e2\u001c\u00e3": 498275,
+                "M\ud990\udecb\u009d\u00bd": "null"
+              }
+            },
+            [],
+            {},
+            [
+              -1.1495878220150904e+16,
+              "null",
+              "false"
+            ],
+            [
+              {},
+              "true",
+              [
+                "a\udad8\udd01\u00c1}\ud94a\udfc0\ud889\udea1\u0087AY\u00f9\u0011\u0088>\u00bd\u0095\u00fe\u00e6\u00da\u00ca\udb35\ude4aF\u001d\u0010\u00fb\\=\u00c5\u0090\u00ea",
+                "true",
+                -87380
+              ]
+            ],
+            [
+              "null"
+            ],
+            {},
+            [
+              -2.9301455850043287e-56,
+              "\udab6\ude9a\u0010\u00dd\udbb1\udfc4\u00f7\u00fb\u00b4zb2\u0099\ud9f5\udf14\u00c8y\u00fb\u00c9\u00d140\u00e9\u00b9\u0011`\uda37\udeb4\u009a\u00ae-",
+              {
+                "": "true",
+                "~\udad5\udd7a\u00b7\u008b\u0090\u00b8\u00c6": "true",
+                "\ud88b\udeb0\ud8df\udefcc*y\u0004{": "false"
+              }
+            ],
+            {
+              "\u00cb\u00c78a\u009d": {
+                "\u00b8\u00cfee\ud967\udfd3*\u008aj}\u00a3": ""
+              },
+              "": "null",
+              "$\u00ec\u00c9%": "null"
+            },
+            {
+              "%\ud959\udfc0": {},
+              "\u00f8\u00a0D\ud834\udcddW|\u00b5": -491282834,
+              "\u001e\u00f0\u00c6": [
+                5.2001169889455336e+16,
+                "false",
+                40296564
+              ]
+            },
+            [
+              [
+                "false"
+              ],
+              {
+                "\u00ac\u00ea\u00b6": -1952802545722,
+                "\u00ff\u001a\u00d1": "\u00af\u0016F)\u00d1\ud88c\udcfa\ud91b\udccb",
+                "": 5852369014238849.0
+              }
+            ],
+            {
+              "\udb1d\udf89\"": "~\u00f2\u00dcp",
+              "\u00c6\ud81e\udc4e=\u00e7\u00a6%\uda5f\ude61fQ": [],
+              "\u562f": "\u0007\ud8f1\udd2c\u00d2\ud8ab\udcd7\u0625\u00e2\u009f\u00be\udae8\udf0f\u00d3t=\u0084\uda22\udc57g\u00ca\u00e1\ud86e\udcdc\u00db"
+            },
+            "true",
+            "true",
+            [
+              "true"
+            ],
+            {
+              "\u00e0\u00cc\u00c9\ud9b5\udd5b\u008e\u00bb\u00dc": [],
+              "\u0019\ud9e3\udee1\u00ad\u0096": 4194305,
+              "NIL": {
+                "\u00d9%\u00192\u00b3r<k\udaa5\udfea\uda2f\udf881\u001cY\ud624\u00da\u00f4\uda88\udea5\u00d6\u0087o\u00a3\u0015\u0000Nj\udba2\uddd2\u00ee\u0007\ud894\udc91\u00ad\f\u00c5A\u00bb": 2174
+              }
+            },
+            [],
+            [
+              "true",
+              303267
+            ]
+          ],
+          "\u00af\uda25\udfb4\u00ce1",
+          -5.377512550568404e+93,
+          [
+            [
+              {
+                "W\uda1d\udfac\b\u000e\u00d8\u00b8": -64897,
+                "": "null"
+              },
+              [],
+              {}
+            ],
+            {
+              "\udaae\udc6e\udb0a\ude0e\u00ec\u00f3f\u001bi\uad99": -1362,
+              "\u00e8\u00dc": "\u000f\ud87c\udd4d\u00ba",
+              "\udb32\udd85\u0088\u00b7\u0094": "true"
+            },
+            [],
+            [],
+            []
+          ],
+          "false",
+          -1.7976931348623157e+308,
+          [
+            {},
+            "null",
+            "null",
+            "null",
+            {
+              "y\u00b0&N\b\u00be\ud868\udf60\u00d2": [],
+              "?6\u00c6\ud8c7\udcc8": [],
+              "|\ud8e3\udc5b\u00c1": [
+                "null"
+              ]
+            },
+            [],
+            [
+              2.2250738585072014e-308
+            ],
+            {},
+            []
+          ]
+        ]
+      },
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null
+    }
+  ]
+}

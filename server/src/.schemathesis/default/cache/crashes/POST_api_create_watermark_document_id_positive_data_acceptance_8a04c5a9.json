@@ -1,0 +1,120 @@
+{
+  "operation": "POST /api/create-watermark/{document_id}",
+  "method": "POST",
+  "path_template": "/api/create-watermark/{document_id}",
+  "fingerprint": "8a04c5a9",
+  "case_id": "TILQfE",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"\\ud83c\\uddfa\\ud83c\\uddf8\": [-2.070617488104177e+16, -0.99999, \"m\"], \"dr\\uda9e\\udd15\\u0016\\u008bi\\ud822\\udc74\": false, \"\": {\"\\u009b\\r\\u00157\": {}, \"\\u0002/\\uda17\\udc31\": [], \"\\udbd4\\udde7\\uda08\\udf48R\\ud8bf\\udcec6\\ud863\\ude9a\\bqA\": {}}, \"\\u00ac\\u008e\\u00b8x\": [{\"\\u00a6\\ud8c1\\udc85\\ud8c6\\udf33a\\u0095\\ud91f\\udc16\\u00be\\u00ca\\u0080\\u00b3\": false, \"TS\": false, \"\\u00ce\\u008cf\": null}], \"0\": [[], {\"\": {\"\": 238}, \"\\u007f\": -539551982473477.0}], \"key\": \"[Filtered]\", \"secret\": \"[Filtered]\", \"method\": \"FALSE\", \"position\": \"}\", \"intended_for\": \"\\u00df\\ud951\\udd4di\\u00ec5\\u00d7\"}' http://localhost:5000/api/create-watermark/-116438",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/create-watermark/-116438",
+      "url_template": "http://localhost:5000/api/create-watermark/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "TILQfE",
+        "Content-Type": "application/json",
+        "Content-Length": "607"
+      },
+      "response": {
+        "status_code": 405,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Wed, 14 Oct 2026 14:13:16 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "OPTIONS, GET, HEAD",
+          "content-length": "153"
+        },
+        "body": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx\nHint: The request body contains 5 additional properties not defined in the schema (``, `0`, `dr\uda9e\udd15\u0016\u008bi\ud822\udc74` and 2 more). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields."
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.013647199999923032,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "stateful",
+          "data": {
+            "type": "StatefulPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/create-watermark/{document_id}",
+      "path_parameters": {
+        "document_id": -116438
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "\ud83c\uddfa\ud83c\uddf8": [
+            -2.070617488104177e+16,
+            -0.99999,
+            "m"
+          ],
+          "dr\uda9e\udd15\u0016\u008bi\ud822\udc74": false,
+          "": {
+            "\u009b\r\u00157": {},
+            "\u0002/\uda17\udc31": [],
+            "\udbd4\udde7\uda08\udf48R\ud8bf\udcec6\ud863\ude9a\bqA": {}
+          },
+          "\u00ac\u008e\u00b8x": [
+            {
+              "\u00a6\ud8c1\udc85\ud8c6\udf33a\u0095\ud91f\udc16\u00be\u00ca\u0080\u00b3": false,
+              "TS": false,
+              "\u00ce\u008cf": null
+            }
+          ],
+          "0": [
+            [],
+            {
+              "": {
+                "": 238
+              },
+              "\u007f": -539551982473477.0
+            }
+          ],
+          "key": "[Filtered]",
+          "secret": "[Filtered]",
+          "method": "FALSE",
+          "position": "}",
+          "intended_for": "\u00df\ud951\udd4di\u00ec5\u00d7"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

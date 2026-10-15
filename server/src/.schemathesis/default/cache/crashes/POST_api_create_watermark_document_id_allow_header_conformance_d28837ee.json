@@ -1,0 +1,106 @@
+{
+  "operation": "POST /api/create-watermark/{document_id}",
+  "method": "OPTIONS",
+  "path_template": "/api/create-watermark/{document_id}",
+  "fingerprint": "d28837ee",
+  "case_id": "aOPAUv",
+  "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"method\": \"\", \"secret\": \"[Filtered]\", \"key\": \"[Filtered]\", \"intended_for\": \"\", \"position\": \"\"}' http://localhost:5000/api/create-watermark/0",
+  "sequence": [
+    {
+      "method": "OPTIONS",
+      "url": "http://localhost:5000/api/create-watermark/0",
+      "url_template": "http://localhost:5000/api/create-watermark/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "aOPAUv",
+        "Content-Type": "application/json",
+        "Content-Length": "75"
+      },
+      "response": {
+        "status_code": 200,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Wed, 14 Oct 2026 14:13:13 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "OPTIONS, GET, POST, HEAD",
+          "content-length": "0"
+        },
+        "body": ""
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "allow_header_conformance",
+          "status": "failure",
+          "message": "Invalid Allow header\n\n`Allow` header does not match the schema \u2014 undocumented methods advertised: GET\n\nList exactly the methods this resource supports in `Allow`"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 7.999999979801942e-06,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "HEADER": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: OPTIONS",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "document_id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "document_id": 0
+          },
+          "HEADER": {
+            "Authorization": "Bearer "
+          }
+        }
+      },
+      "path": "/api/create-watermark/{document_id}",
+      "path_parameters": {
+        "document_id": "0"
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "method": "",
+          "secret": "[Filtered]",
+          "key": "[Filtered]",
+          "intended_for": "",
+          "position": ""
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

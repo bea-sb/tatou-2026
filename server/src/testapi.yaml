@@ -1,0 +1,152 @@
+#Schemathesis fuzzing scope
+#Run only against a test instance with disposable test data.
+#Verify database deletion and filesystem deletion separately.
+
+#yaml is supposed to help schemathesis in what api looks like and what
+#requests it could test and responses to get Fuzzing thang
+
+openapi: 3.0.3
+info:
+  title: tatou API Fuzzer
+  version: 1.0.0
+
+#authentication
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+#first test Great success
+#just sen a GET to /healthz and recieve 200 for Great success
+paths:
+  /healthz:    #checks /healthz
+    get:
+      responses:
+        "200":
+          description: Great success for healthz checkingg
+#send GET request to the /healthz path and expect HTTP 200 as the response
+#only need security scheme is flask check that ur logged in possibly @auth.required
+#just like delete and upload
+
+# the real BUISSNESS
+  /api/upload-document:
+
+    post:
+      summary: Upload a PDF in tatou as user :)
+
+
+      security:
+        - BearerAuth: []
+
+    
+      requestBody: #what data to send with
+        required: true
+        content:
+          multipart/form-data: #sort of data
+            schema:
+              type: object
+              required:
+                - file #file must be woth
+              properties:
+                file:
+                  type: string
+                  format: binary
+                name: # name should probably be string because we got error that numbers accepted in upload
+                  oneOf:  # instead of type: string, integer here
+                    - type: string
+                    - type: integer
+
+      responses:
+        "201":
+          description: PDF uploaded Great sucess :D
+        "400":
+          description: strange upload data
+        "401":
+          description: Authentication required GET THESE BEGGARS OUT OF HERE
+        "503":
+          description: Database error stuff
+
+
+
+
+
+  /api/delete-document:
+    
+    delete:
+      summary: Delete a PDF using a query parameter
+      security:
+        - BearerAuth: []
+
+      parameters:  #how schemathesis should go about the request
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      
+      responses:
+        "200":
+          description: Deletion result
+        "401":
+          description: Authentication required
+        "404":
+          description: Document not found
+        "503":
+          description: Database error
+
+    post:
+
+      summary: Delete a PDF using a JSON body
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+
+
+      responses:
+        "200":
+          description: Deletion result
+        "400":
+          description: Invalid document ID
+        "401":
+          description: Authentication required
+        "404":
+          description: Document not found
+        "503":
+          description: Database error
+
+
+
+  /api/delete-document/{document_id}:
+    delete:
+      summary: Delete a PDF by document ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deletion result
+        "400":
+          description: Invalid document ID
+        "401":
+          description: Authentication required
+        "404":
+          description: Document not found
+        "503":
+          description: Database error

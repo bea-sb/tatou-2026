@@ -1,0 +1,189 @@
+{
+  "operation": "POST /api/delete-document",
+  "method": "POST",
+  "path_template": "/api/delete-document",
+  "fingerprint": "badfbf3d",
+  "case_id": "25bYYw",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"id\": [null, [[false], null], [true, \"\\ud849\\udc76\"], [{}], {\"\\u0094\\u00bb\\u904b\\n\\u00bd\\u00f5\": 1.0741959884627604e+16, \"\\u009d\": true, \"+#\\u009f\\u00b2\\u00d1\": null}, {\"7\\ud8ca\\udc0f\\ud8a3\\ude993\": \"\", \"\\u00a1\\u00ae\\u00dd\\u000f\": [\"&\\ud87b\\ude9c\\u00f5\\u00a8\"], \"Q\\ud901\\ude61f\\u0007\\u0016\\u00e9.Z!\\u00ff\\u0013\\u0013\\u00c7\": {\"\\u00f9\\ud8a9\\udc9c\\u0097\": -1244, \"\\u00e1\\u00b6\": null, \"\\udb58\\udefe\\ud85c\\ude9a\\nA\": -1.1125369292536007e-308}}, {\"true\": true}, [[280, \"\", 15158], -4.2236286050994286e+95, []], {}, 8088, {\"\\uda74\\udf96\": \"\"}, [177307], [[], [true, \"-Infinity\"], [1715, 1.7976931348623155e+308]], [null], null, [true, \"4y\\u0006\\u0015\\u00c3\", \"\\u00c7c\\ud91b\\udcf4mI\\ud917\\udc17\\ud80d\\udd29\\ud8f5\\udc2e\\ud9e4\\udd92\\udb6f\\udd70\"], {\"\": \">\\udae8\\udc60Y\\u0004\\u0081m\\\\\\u1ae7\", \",Z\\ud8ee\\udef9\\uda9e\\udd46\": -1659, \"COM1\": null}, [-5.666009163637442e+16, {\"\\u00d5\\u0095\\udb9b\\udcb0\": null, \"\\u00e6\": 2.4419671819021113e+42}, {}], [70], null]}' http://localhost:5000/api/delete-document",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/delete-document",
+      "url_template": "http://localhost:5000/api/delete-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "25bYYw",
+        "Content-Type": "application/json",
+        "Content-Length": "949"
+      },
+      "response": {
+        "status_code": 503,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 16:09:52 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "62"
+        },
+        "body": "{\"error\":\"database error: dict can not be used as parameter\"}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.06531879999965895,
+          "mode": "negative"
+        },
+        "components": {
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "violates `type` at /properties/id (was integer, became array)",
+            "location": "/properties/id",
+            "parameter": "id",
+            "parameter_location": "BODY",
+            "mutations": [
+              {
+                "path": [
+                  "id"
+                ],
+                "parameter_location": "body",
+                "schema_pointer": "/properties/id",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": "id",
+                "original_value": "integer",
+                "new_value": "array"
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/delete-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "id": [
+            null,
+            [
+              [
+                false
+              ],
+              null
+            ],
+            [
+              true,
+              "\ud849\udc76"
+            ],
+            [
+              {}
+            ],
+            {
+              "\u0094\u00bb\u904b\n\u00bd\u00f5": 1.0741959884627604e+16,
+              "\u009d": true,
+              "+#\u009f\u00b2\u00d1": null
+            },
+            {
+              "7\ud8ca\udc0f\ud8a3\ude993": "",
+              "\u00a1\u00ae\u00dd\u000f": [
+                "&\ud87b\ude9c\u00f5\u00a8"
+              ],
+              "Q\ud901\ude61f\u0007\u0016\u00e9.Z!\u00ff\u0013\u0013\u00c7": {
+                "\u00f9\ud8a9\udc9c\u0097": -1244,
+                "\u00e1\u00b6": null,
+                "\udb58\udefe\ud85c\ude9a\nA": -1.1125369292536007e-308
+              }
+            },
+            {
+              "true": true
+            },
+            [
+              [
+                280,
+                "",
+                15158
+              ],
+              -4.2236286050994286e+95,
+              []
+            ],
+            {},
+            8088,
+            {
+              "\uda74\udf96": ""
+            },
+            [
+              177307
+            ],
+            [
+              [],
+              [
+                true,
+                "-Infinity"
+              ],
+              [
+                1715,
+                1.7976931348623155e+308
+              ]
+            ],
+            [
+              null
+            ],
+            null,
+            [
+              true,
+              "4y\u0006\u0015\u00c3",
+              "\u00c7c\ud91b\udcf4mI\ud917\udc17\ud80d\udd29\ud8f5\udc2e\ud9e4\udd92\udb6f\udd70"
+            ],
+            {
+              "": ">\udae8\udc60Y\u0004\u0081m\\\u1ae7",
+              ",Z\ud8ee\udef9\uda9e\udd46": -1659,
+              "COM1": null
+            },
+            [
+              -5.666009163637442e+16,
+              {
+                "\u00d5\u0095\udb9b\udcb0": null,
+                "\u00e6": 2.4419671819021113e+42
+              },
+              {}
+            ],
+            [
+              70
+            ],
+            null
+          ]
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

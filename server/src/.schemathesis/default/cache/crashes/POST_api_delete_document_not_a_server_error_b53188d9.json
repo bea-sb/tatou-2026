@@ -1,0 +1,97 @@
+{
+  "operation": "POST /api/delete-document",
+  "method": "POST",
+  "path_template": "/api/delete-document",
+  "fingerprint": "b53188d9",
+  "case_id": "gUXaJQ",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '\"n\\ud93f\\udc92\"' http://localhost:5000/api/delete-document",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/delete-document",
+      "url_template": "http://localhost:5000/api/delete-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "gUXaJQ",
+        "Content-Type": "application/json",
+        "Content-Length": "15"
+      },
+      "response": {
+        "status_code": 500,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Thu, 15 Oct 2026 16:09:57 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "265"
+        },
+        "body": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.003900199997588061,
+          "mode": "negative"
+        },
+        "components": {
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "stateful",
+          "data": {
+            "type": "StatefulPhaseData",
+            "description": "violates `type` (was object, became string)",
+            "location": null,
+            "parameter": null,
+            "parameter_location": "BODY",
+            "mutations": [
+              {
+                "path": [],
+                "parameter_location": "body",
+                "schema_pointer": "",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": null,
+                "original_value": "object",
+                "new_value": "string"
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/delete-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": "n\ud93f\udc92"
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

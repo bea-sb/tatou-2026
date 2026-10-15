@@ -1,0 +1,100 @@
+{
+  "operation": "POST /api/create-watermark/{document_id}",
+  "method": "POST",
+  "path_template": "/api/create-watermark/{document_id}",
+  "fingerprint": "63173383",
+  "case_id": "uoquc3",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d 4.1032274338998776e+16 http://localhost:5000/api/create-watermark/4748",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/create-watermark/4748",
+      "url_template": "http://localhost:5000/api/create-watermark/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "uoquc3",
+        "Content-Type": "application/json",
+        "Content-Length": "22"
+      },
+      "response": {
+        "status_code": 500,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Wed, 14 Oct 2026 14:05:02 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "265"
+        },
+        "body": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 500\nDocumented: 201, 400, 401, 404"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.004264500000317639,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "stateful",
+          "data": {
+            "type": "StatefulPhaseData",
+            "description": "violates `type` (was object, became number)",
+            "location": null,
+            "parameter": null,
+            "parameter_location": "BODY",
+            "mutations": [
+              {
+                "path": [],
+                "parameter_location": "body",
+                "schema_pointer": "",
+                "channel": "schema",
+                "operator": "change_type",
+                "keywords": [
+                  "type"
+                ],
+                "parameter": null,
+                "original_value": "object",
+                "new_value": "number"
+              }
+            ]
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/create-watermark/{document_id}",
+      "path_parameters": {
+        "document_id": 4748
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": 4.1032274338998776e+16
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}
