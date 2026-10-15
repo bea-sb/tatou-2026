@@ -887,6 +887,9 @@ def create_app():
     @app.route("/api/delete-document/<document_id>", methods=["DELETE"])
     @require_auth #=NEED AUTH otherwise someone should be able to delete documensts #=AUTGH ADDED
     def delete_document(document_id: int | None = None):
+        endpoint = "/api/delete-document"
+        user_id = g.user.get("id")
+
         # accept id from path, query (?id= / ?documentid=), or JSON body on POST
         if not document_id:
             document_id = (
@@ -903,14 +906,31 @@ def create_app():
         try:
             with get_engine().connect() as conn:
                 row = conn.execute(
-                    text("SELECT * FROM Documents WHERE id = :id"),
-                    {"id": doc_id},
+                    text("SELECT * FROM Documents WHERE id = :id AND ownerid = :uid"),
+                    {"id": doc_id, "uid": int(user_id)},
                 ).first()
         except Exception as e:
+            log_security_event(
+                "document_delete_failed",
+                severity="ERROR",
+                reason="database_lookup_error",
+                user_id=user_id,
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error": f"database error: {str(e)}"}), 503
 
         if not row:
             # Don’t reveal others’ docs—just say not found
+            log_security_event(
+                "document_delete_denied",
+                severity="WARNING",
+                reason="document_not_found_or_not_owned",
+                user_id=user_id,
+                document_id=doc_id,
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error": "document not found"}), 404
 
         # Resolve and delete file (best effort)
@@ -942,7 +962,27 @@ def create_app():
                 # conn.execute(text("DELETE FROM Version WHERE documentid = :id"), {"id": doc_id})
                 conn.execute(text("DELETE FROM Documents WHERE id = :id"), {"id": doc_id})
         except Exception as e:
+            log_security_event(
+                "document_delete_failed",
+                severity="ERROR",
+                reason="database_delete_error",
+                user_id=user_id,
+                document_id=doc_id,
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error": f"database error during delete: {str(e)}"}), 503
+
+        log_security_event(
+            "document_delete_succeeded",
+            user_id=user_id,
+            document_id=doc_id,
+            endpoint=endpoint,
+            method=request.method,
+            file_deleted=file_deleted,
+            file_missing=file_missing,
+            file_cleanup_failed=delete_error is not None,
+        )
 
         return jsonify({
             "deleted": True,
