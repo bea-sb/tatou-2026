@@ -1,0 +1,99 @@
+{
+  "operation": "POST /api/delete-document",
+  "method": "POST",
+  "path_template": "/api/delete-document",
+  "fingerprint": "06bad603",
+  "case_id": "imY8AF",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"\": [[[], null, []], [], 6.546789584176794e+150], \"\\u00811\\u000e\": [-4501937940, null, false], \"id\": -111199}' http://localhost:5000/api/delete-document",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/delete-document",
+      "url_template": "http://localhost:5000/api/delete-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "imY8AF",
+        "Content-Type": "application/json",
+        "Content-Length": "110"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Fri, 16 Oct 2026 12:01:27 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "56"
+        },
+        "body": "{\"error\":\"doc id must be valid number AKA more than 0\"}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx\nHint: The request body contains 2 additional properties not defined in the schema (``, `\u00811\u000e`). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields."
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.0039160000160336494,
+          "mode": "positive"
+        },
+        "components": {
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/delete-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "": [
+            [
+              [],
+              null,
+              []
+            ],
+            [],
+            6.546789584176794e+150
+          ],
+          "\u00811\u000e": [
+            -4501937940,
+            null,
+            false
+          ],
+          "id": -111199
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "operation": "POST /api/upload-document",
+  "method": "POST",
+  "path_template": "/api/upload-document",
+  "fingerprint": "6fdecefd",
+  "case_id": "erV46Z",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=aaff2be1b30ddaf008590dbe8812517d' -d $'--aaff2be1b30ddaf008590dbe8812517d\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\ufffdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\ufffdU\\x00\\x00\\x00\\nIDATx\ufffdc`\\x00\\x00\\x00\\x02\\x00\\x01H\ufffd\ufffdq\\x00\\x00\\x00\\x00IEND\ufffdB`\ufffd\\r\\n--aaff2be1b30ddaf008590dbe8812517d\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n\\r\\n--aaff2be1b30ddaf008590dbe8812517d--\\r\\n' http://localhost:5000/api/upload-document\n\n\u26a0\ufe0f  Request body contains non-printable characters. Actual value: b'--aaff2be1b30ddaf008590dbe8812517d\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\\xef\\xbf\\xbdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\\xef\\xbf\\xbdU\\x00\\x00\\x00\\nIDATx\\xef\\xbf\\xbdc`\\x00\\x00\\x00\\x02\\x00\\x01H\\xef\\xbf\\xbd\\xef\\xbf\\xbdq\\x00\\x00\\x00\\x00IEND\\xef\\xbf\\xbdB`\\xef\\xbf\\xbd\\r\\n--aaff2be1b30ddaf008590dbe8812517d\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n\\r\\n--aaff2be1b30ddaf008590dbe8812517d--\\r\\n'",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:5000/api/upload-document",
+      "url_template": "http://localhost:5000/api/upload-document",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "erV46Z",
+        "Content-Length": "296",
+        "Content-Type": "multipart/form-data; boundary=f815185a8273451728cc83d7c449f593"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Fri, 16 Oct 2026 12:01:27 GMT",
+          "connection": "close",
+          "content-type": "application/json",
+          "content-length": "35"
+        },
+        "body": "{\"error\":\"name must not be empti\"}\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.0008974999946076423,
+          "mode": "positive"
+        },
+        "components": {
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/upload-document",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "file": "",
+          "name": ""
+        }
+      },
+      "media_type": "multipart/form-data",
+      "parent_index": null
+    }
+  ]
+}

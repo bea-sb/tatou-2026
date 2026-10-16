@@ -320,7 +320,26 @@ def create_app():
         user_dir.mkdir(parents=True, exist_ok=True)
 
         ts = dt.datetime.utcnow().strftime("%Y%m%dT%H%M%S%fZ")
-        final_name = request.form.get("name") or fname
+        #final_name = request.form.get("name") or fname
+#= fuzzfix
+        ifList = request.form.getlist("name") #check if list or
+        if len(ifList) >1:
+            return jsonify({"error": "name must only be one"}), 400
+
+        if ifList: #if no name provided just upload filename
+            final_name = ifList[0]
+        else:
+            final_name = fname
+
+
+        if not isinstance(final_name,str):
+            return jsonify({"error": "name must be string/letters"}),400
+        if not final_name.strip():
+            return jsonify({"error": "name must not be empti"}),400
+        if len(final_name) > 255:
+            return jsonify({"error": "name too long"}),400
+        
+
         stored_name = f"{ts}__{fname}"
         stored_path = user_dir / stored_name
         file.save(stored_path)
@@ -887,24 +906,40 @@ def create_app():
     @app.route("/api/delete-document/<document_id>", methods=["DELETE"])
     @require_auth #=NEED AUTH otherwise someone should be able to delete documensts #=AUTGH ADDED
     def delete_document(document_id: int | None = None):
-        # accept id from path, query (?id= / ?documentid=), or JSON body on POST
-        if not document_id:
-            document_id = (
-                request.args.get("id")
-                or request.args.get("documentid")
-                or (request.is_json and (request.get_json(silent=True) or {}).get("id"))
-            )
-        try:
+        
+        
+        #= get it FuzzfixTEst
+        if document_id is None:
+            document_id=(request.args.get("id") or request.args.get("documentid"))
+                
+        if document_id is None and request.is_json:
+            data=request.get_json(silent=True)
+            if not isinstance(data,dict): #we dont want another dict incident
+                return jsonify({"error": "json must be obj"}), 400
+            document_id = data.get("id")
+        
+        if isinstance(document_id,bool): #can be bool because int can be bool like 0 1
+            return jsonify({"error": "doc id must be int no bool"}), 400
+            
+        #= check that it be int
+        if isinstance(document_id,str):
+            try:
+                doc_id = int(document_id)
+            except ValueError: return jsonify({"error": "doc id must be int"}),400
+        else:
             doc_id = document_id
-        except (TypeError, ValueError):
-            return jsonify({"error": "document id required"}), 400
+        
+        if not isinstance(doc_id, int):
+            return jsonify({"error": "doc id must be int"}), 400
+        if doc_id <= 0:
+            return jsonify({"error": "doc id must be valid number AKA more than 0"}), 400
 
         # Fetch the document (enforce ownership)
         try:
             with get_engine().connect() as conn:
                 row = conn.execute(
-                    text("SELECT * FROM Documents WHERE id = :id"),
-                    {"id": doc_id},
+                    text("SELECT * FROM Documents WHERE id = :id AND ownerid = :uid"), #add AND ownerid = :uid" fuzzfix
+                    {"id": doc_id, "uid": int(g.user["id"])},
                 ).first()
         except Exception as e:
             return jsonify({"error": f"database error: {str(e)}"}), 503
@@ -940,7 +975,7 @@ def create_app():
                 # If your schema does NOT have ON DELETE CASCADE on Version.documentid,
                 # uncomment the next line first:
                 # conn.execute(text("DELETE FROM Version WHERE documentid = :id"), {"id": doc_id})
-                conn.execute(text("DELETE FROM Documents WHERE id = :id"), {"id": doc_id})
+                conn.execute(text("DELETE FROM Documents WHERE id = :id AND ownerid = :uid"), {"id": doc_id, "uid": int(g.user["id"])}) #= fuzzfix
         except Exception as e:
             return jsonify({"error": f"database error during delete: {str(e)}"}), 503
 

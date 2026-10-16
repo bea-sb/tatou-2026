@@ -1,0 +1,97 @@
+{
+  "operation": "DELETE /api/delete-document/{document_id}",
+  "method": "OPTIONS",
+  "path_template": "/api/delete-document/{document_id}",
+  "fingerprint": "744f1ca4",
+  "case_id": "GpC7m1",
+  "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' http://localhost:5000/api/delete-document/1",
+  "sequence": [
+    {
+      "method": "OPTIONS",
+      "url": "http://localhost:5000/api/delete-document/1",
+      "url_template": "http://localhost:5000/api/delete-document/{document_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.31.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "GpC7m1",
+        "Content-Length": "0"
+      },
+      "response": {
+        "status_code": 200,
+        "headers": {
+          "server": "gunicorn",
+          "date": "Fri, 16 Oct 2026 12:09:05 GMT",
+          "connection": "close",
+          "content-type": "text/html; charset=utf-8",
+          "allow": "DELETE, GET, HEAD, OPTIONS",
+          "content-length": "0"
+        },
+        "body": ""
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "allow_header_conformance",
+          "status": "failure",
+          "message": "Invalid Allow header\n\n`Allow` header does not match the schema \u2014 undocumented methods advertised: GET\n\nList exactly the methods this resource supports in `Allow`"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 6.799993570894003e-06,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "HEADER": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: OPTIONS",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "document_id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "document_id": 1
+          },
+          "HEADER": {
+            "Authorization": "Bearer "
+          }
+        }
+      },
+      "path": "/api/delete-document/{document_id}",
+      "path_parameters": {
+        "document_id": "1"
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null
+    }
+  ]
+}
