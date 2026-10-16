@@ -8,6 +8,7 @@ import uuid
 import re
 from pathlib import Path
 from functools import wraps
+from decimal import Decimal, InvalidOperation
 
 
 from flask import Flask, jsonify, request, g, send_file
@@ -332,14 +333,22 @@ def create_app():
         else:
             final_name = fname
 
-
+        """
         if not isinstance(final_name,str):
             return jsonify({"error": "name must be string/letters"}),400
+        """
         if not final_name.strip():
             return jsonify({"error": "name must not be empti"}),400
         if len(final_name) > 255:
             return jsonify({"error": "name too long"}),400
-        
+
+        try:
+            Decimal(final_name)
+            isNumber = True
+        except InvalidOperation:
+            isNumber = False
+        if isNumber:
+            return jsonify({"error": "name cannot be only numbers"}), 400
         stored_name = f"{ts}__{fname}"
         stored_path = user_dir / stored_name
         file.save(stored_path)
