@@ -647,58 +647,23 @@ def create_app():
     @app.post("/api/rmap-initiate")
     @app.post("/rmap-initiate-msg1")
     def rmap_initiate_msg1():
-        endpoint = "/api/rmap-initiate"
 
         info = request.get_json(silent=True) #silent true to stop badrequest before own errors
 
         if not info:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="WARNING",
-                reason="missing_json_body",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error" : "missing json bod"}), 400 #Bad Reques
         try:
             identity, resp1 = server.receiveMsg1(info)
-            log_security_event(
-                "rmap_msg1_accepted",
-                endpoint=endpoint,
-                method=request.method,
-            )
+
             return jsonify(resp1), 200
         
         #add some rmaperrors
         except UnknownIdentityException as e: #put more specific error/exception first
-                log_security_event(
-                    "rmap_handshake_failed",
-                    severity="WARNING",
-                    reason="unknown_identity",
-                    endpoint=endpoint,
-                    method=request.method,
-                )
-                return jsonify({"error": "Unknown Identity"}), 401
-        
+                    return jsonify({"error": "Unknown Identity"}), 401
         except RMAPError as e:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="WARNING",
-                reason="protocol_rejected_msg1",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error": f"RMAP failed: {e}"}), 400
-        
         #EXCEPTION specifyprevents false silent failures
         except Exception as e:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="ERROR",
-                reason="internal_error_processing_msg1",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
 
     #=msg2
@@ -706,20 +671,11 @@ def create_app():
     @app.post("/rmap-getlink-msg2")
     def rmap_getlink_msg2():
 
-        endpoint = "/api/rmap-get-link"
-
         info = request.get_json(silent=True)#should we add silent=true here?
 
         #we should add some error messages or
         #pick up if its empty null etc
         if not info:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="WARNING",
-                reason="missing_json_body",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error" : "missing json bod, something is missing"}), 400
         try:
             # expectedLink is always just the bare 32-hex-char link, even
@@ -733,51 +689,19 @@ def create_app():
                 identity=identity,
                 link= expectedLink
             )
-
-            log_security_event(
-                "rmap_handshake_succeeded",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify(resp2), 200
         #add some rmaperrors
         #put specific ones first otherwise they wont be catched and understood
         except UnknownIdentityException as e:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="WARNING",
-                reason="unknown_identity",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error": "Unknown Identity"}), 401
         except RMAPError:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="WARNING",
-                reason="protocol_rejected_msg2",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"Error": "rmap fail"}), 400
         except FileNotFoundError as e:
-            log_security_event(
-                "rmap_processing_failed",
-                severity="ERROR",
-                reason="watermark_source_file_missing",
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error" : str(e)}), 500
         except Exception as e:
-            log_security_event(
-                "rmap_handshake_failed",
-                severity="ERROR",
-                reason="internal_error_processing_msg2",
-                endpoint=endpoint,
-                method=request.method,
-            )
-            return jsonify({"error": f"rmap watermark creation failed: {e}"}), 500
+            return jsonify({
+                "error": f"rmap watermark creation failed: {e}"
+            }), 500
     
 
     #=cant have document twice as get-document already taken
@@ -982,8 +906,7 @@ def create_app():
     @app.route("/api/delete-document/<document_id>", methods=["DELETE"])
     @require_auth #=NEED AUTH otherwise someone should be able to delete documensts #=AUTGH ADDED
     def delete_document(document_id: int | None = None):
-        endpoint = request.endpoint or request.path
-        user_id = int(g.user["id"])
+        
         
         #= get it FuzzfixTEst
         if document_id is None:
@@ -1015,31 +938,14 @@ def create_app():
         try:
             with get_engine().connect() as conn:
                 row = conn.execute(
-                    text("SELECT * FROM Documents WHERE id = :id AND ownerid = :uid"),
+                    text("SELECT * FROM Documents WHERE id = :id AND ownerid = :uid"), #add AND ownerid = :uid" fuzzfix
                     {"id": doc_id, "uid": int(g.user["id"])},
                 ).first()
         except Exception as e:
-            log_security_event(
-                "document_delete_failed",
-                severity="ERROR",
-                reason="database_lookup_error",
-                user_id=user_id,
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error": f"database error: {str(e)}"}), 503
 
         if not row:
             # Don’t reveal others’ docs—just say not found
-            log_security_event(
-                "document_delete_denied",
-                severity="WARNING",
-                reason="document_not_found_or_not_owned",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error": "document not found"}), 404
 
         # Resolve and delete file (best effort)
@@ -1071,27 +977,7 @@ def create_app():
                 # conn.execute(text("DELETE FROM Version WHERE documentid = :id"), {"id": doc_id})
                 conn.execute(text("DELETE FROM Documents WHERE id = :id AND ownerid = :uid"), {"id": doc_id, "uid": int(g.user["id"])}) #= fuzzfix
         except Exception as e:
-            log_security_event(
-                "document_delete_failed",
-                severity="ERROR",
-                reason="database_delete_error",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method=request.method,
-            )
             return jsonify({"error": f"database error during delete: {str(e)}"}), 503
-
-        log_security_event(
-            "document_delete_succeeded",
-            user_id=user_id,
-            document_id=doc_id,
-            endpoint=endpoint,
-            method=request.method,
-            file_deleted=file_deleted,
-            file_missing=file_missing,
-            file_cleanup_failed=delete_error is not None,
-        )
 
         return jsonify({
             "deleted": True,
@@ -1410,9 +1296,6 @@ def create_app():
     @app.post("/api/read-watermark/<int:document_id>")
     @require_auth
     def read_watermark(document_id: int | None = None):
-        endpoint = "/api/read-watermark"
-        user_id = g.user.get("id")
-    
         # accept id from path, query (?id= / ?documentid=), or JSON body on POST
         if not document_id:
             document_id = (
@@ -1423,14 +1306,6 @@ def create_app():
         try:
             doc_id = document_id
         except (TypeError, ValueError):
-            log_security_event(
-                "watermark_read_denied",
-                severity="WARNING",
-                reason="invalid_document_id",
-                user_id=user_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": "document id required"}), 400
             
         payload = request.get_json(silent=True) or {}
@@ -1445,15 +1320,6 @@ def create_app():
         except (TypeError, ValueError):
             return jsonify({"error": "document_id (int) is required"}), 400
         if not method or not isinstance(key, str):
-            log_security_event(
-                "watermark_read_denied",
-                severity="WARNING",
-                reason="missing_method_or_key",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": "method, and key are required"}), 400
 
         # lookup the document; FIXME enforce ownership (Put ownership check in sql)
@@ -1466,30 +1332,12 @@ def create_app():
                         WHERE id = :id AND ownerid = :uid
                         LIMIT 1
                     """),
-                    {"id": document_id, "uid": int(user_id)}
+                    {"id": document_id, "uid": int(g.user["id"])},
                 ).first()
         except Exception as e:
-            log_security_event(
-                "watermark_read_failed",
-                severity="ERROR",
-                reason="database_error",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": f"database error: {str(e)}"}), 503
 
         if not row:
-            log_security_event(
-                "watermark_read_denied",
-                severity="WARNING",
-                reason="document_not_found_or_not_owned",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": "document not found"}), 404
 
         # resolve path safely under STORAGE_DIR
@@ -1501,26 +1349,8 @@ def create_app():
         try:
             file_path.relative_to(storage_root)
         except ValueError:
-            log_security_event(
-                "watermark_read_failed",
-                severity="ERROR",
-                reason="document_path_outside_storage",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": "document path invalid"}), 500
         if not file_path.exists():
-            log_security_event(
-                "watermark_read_failed",
-                severity="ERROR",
-                reason="document_file_missing",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": "file missing on disk"}), 410
         
         secret = None
@@ -1531,26 +1361,7 @@ def create_app():
                 key=key
             )
         except Exception as e:
-            log_security_event(
-                "watermark_read_failed",
-                severity="WARNING",
-                reason="watermark_processing_error",
-                user_id=user_id,
-                document_id=doc_id,
-                endpoint=endpoint,
-                method="POST",
-            )
             return jsonify({"error": f"Error when attempting to read watermark: {e}"}), 400
-        
-        log_security_event(
-            "watermark_read_succeeded",
-            user_id=user_id,
-            document_id=doc_id,
-            endpoint=endpoint,
-            method="POST",
-            watermark_method=method,
-        )
-
         return jsonify({
             "documentid": doc_id,
             "secret": secret,
