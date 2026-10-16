@@ -3,7 +3,7 @@
   "method": "OPTIONS",
   "path_template": "/api/delete-document",
   "fingerprint": "07e65218",
-  "case_id": "Q1Kit2",
+  "case_id": "FZiv5N",
   "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"id\": 1}' http://localhost:5000/api/delete-document",
   "sequence": [
     {
@@ -16,7 +16,7 @@
         "Accept": "*/*",
         "Connection": "keep-alive",
         "Authorization": "[Filtered]",
-        "X-Schemathesis-TestCaseId": "Q1Kit2",
+        "X-Schemathesis-TestCaseId": "FZiv5N",
         "Content-Type": "application/json",
         "Content-Length": "9"
       },
@@ -24,10 +24,10 @@
         "status_code": 200,
         "headers": {
           "server": "gunicorn",
-          "date": "Fri, 16 Oct 2026 12:09:04 GMT",
+          "date": "Fri, 16 Oct 2026 15:56:35 GMT",
           "connection": "close",
           "content-type": "text/html; charset=utf-8",
-          "allow": "DELETE, GET, HEAD, POST, OPTIONS",
+          "allow": "POST, DELETE, GET, HEAD, OPTIONS",
           "content-length": "0"
         },
         "body": ""
@@ -42,7 +42,7 @@
       ],
       "meta": {
         "generation": {
-          "time": 4.7000066842883825e-06,
+          "time": 6.89999433234334e-06,
           "mode": "negative"
         },
         "components": {

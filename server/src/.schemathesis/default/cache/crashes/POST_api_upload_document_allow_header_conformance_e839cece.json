@@ -3,7 +3,7 @@
   "method": "OPTIONS",
   "path_template": "/api/upload-document",
   "fingerprint": "e839cece",
-  "case_id": "fenxE6",
+  "case_id": "ROsf5R",
   "code_sample": "curl -X OPTIONS -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=ae0583b436d82b4359a0c5c34a465f27' -d $'--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\ufffdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\ufffdU\\x00\\x00\\x00\\nIDATx\ufffdc`\\x00\\x00\\x00\\x02\\x00\\x01H\ufffd\ufffdq\\x00\\x00\\x00\\x00IEND\ufffdB`\ufffd\\r\\n--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n0\\r\\n--ae0583b436d82b4359a0c5c34a465f27--\\r\\n' http://localhost:5000/api/upload-document\n\n\u26a0\ufe0f  Request body contains non-printable characters. Actual value: b'--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"file\"; filename=\"file.png\"\\r\\n\\r\\n\\xef\\xbf\\xbdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x01\\x08\\x00\\x00\\x00\\x00:~\\xef\\xbf\\xbdU\\x00\\x00\\x00\\nIDATx\\xef\\xbf\\xbdc`\\x00\\x00\\x00\\x02\\x00\\x01H\\xef\\xbf\\xbd\\xef\\xbf\\xbdq\\x00\\x00\\x00\\x00IEND\\xef\\xbf\\xbdB`\\xef\\xbf\\xbd\\r\\n--ae0583b436d82b4359a0c5c34a465f27\\r\\nContent-Disposition: form-data; name=\"name\"\\r\\n\\r\\n0\\r\\n--ae0583b436d82b4359a0c5c34a465f27--\\r\\n'",
   "sequence": [
     {
@@ -16,18 +16,18 @@
         "Accept": "*/*",
         "Connection": "keep-alive",
         "Authorization": "[Filtered]",
-        "X-Schemathesis-TestCaseId": "fenxE6",
+        "X-Schemathesis-TestCaseId": "ROsf5R",
         "Content-Length": "297",
-        "Content-Type": "multipart/form-data; boundary=758f2c649a2eeaa57327b269f95e7dd7"
+        "Content-Type": "multipart/form-data; boundary=7c2eea5eaa397cca2325b5e0322d0d97"
       },
       "response": {
         "status_code": 200,
         "headers": {
           "server": "gunicorn",
-          "date": "Fri, 16 Oct 2026 12:09:04 GMT",
+          "date": "Fri, 16 Oct 2026 15:56:35 GMT",
           "connection": "close",
           "content-type": "text/html; charset=utf-8",
-          "allow": "GET, HEAD, POST, OPTIONS",
+          "allow": "POST, GET, HEAD, OPTIONS",
           "content-length": "0"
         },
         "body": ""
@@ -42,7 +42,7 @@
       ],
       "meta": {
         "generation": {
-          "time": 3.7999998312443495e-06,
+          "time": 5.5000127758830786e-06,
           "mode": "negative"
         },
         "components": {

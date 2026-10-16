@@ -226,7 +226,7 @@ docker-compose.override.yml
 examples/
 
 # ignore 
-.schemathesis
-.hypothesis
+.schemathesis/
+.hypothesis/
 
 
