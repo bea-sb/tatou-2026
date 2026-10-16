@@ -225,3 +225,8 @@ docker-compose.override.yml
 # examples folder maily rmap
 examples/
 
+# ignore 
+.schemathesis
+.hypothesis
+
+
