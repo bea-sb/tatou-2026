@@ -628,23 +628,58 @@ def create_app():
     @app.post("/api/rmap-initiate")
     @app.post("/rmap-initiate-msg1")
     def rmap_initiate_msg1():
+        endpoint = "/api/rmap-initiate"
 
         info = request.get_json(silent=True) #silent true to stop badrequest before own errors
 
         if not info:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="WARNING",
+                reason="missing_json_body",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error" : "missing json bod"}), 400 #Bad Reques
         try:
             identity, resp1 = server.receiveMsg1(info)
-
+            log_security_event(
+                "rmap_msg1_accepted",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify(resp1), 200
         
         #add some rmaperrors
         except UnknownIdentityException as e: #put more specific error/exception first
-                    return jsonify({"error": "Unknown Identity"}), 401
+                log_security_event(
+                    "rmap_handshake_failed",
+                    severity="WARNING",
+                    reason="unknown_identity",
+                    endpoint=endpoint,
+                    method=request.method,
+                )
+                return jsonify({"error": "Unknown Identity"}), 401
+        
         except RMAPError as e:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="WARNING",
+                reason="protocol_rejected_msg1",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error": f"RMAP failed: {e}"}), 400
+        
         #EXCEPTION specifyprevents false silent failures
         except Exception as e:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="ERROR",
+                reason="internal_error_processing_msg1",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error" : "rmap msg1 initate failed"}), 400#Bad Requesserver cannot process request
 
     #=msg2
@@ -652,11 +687,20 @@ def create_app():
     @app.post("/rmap-getlink-msg2")
     def rmap_getlink_msg2():
 
+        endpoint = "/api/rmap-get-link"
+
         info = request.get_json(silent=True)#should we add silent=true here?
 
         #we should add some error messages or
         #pick up if its empty null etc
         if not info:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="WARNING",
+                reason="missing_json_body",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error" : "missing json bod, something is missing"}), 400
         try:
             # expectedLink is always just the bare 32-hex-char link, even
@@ -670,19 +714,51 @@ def create_app():
                 identity=identity,
                 link= expectedLink
             )
+
+            log_security_event(
+                "rmap_handshake_succeeded",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify(resp2), 200
         #add some rmaperrors
         #put specific ones first otherwise they wont be catched and understood
         except UnknownIdentityException as e:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="WARNING",
+                reason="unknown_identity",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error": "Unknown Identity"}), 401
         except RMAPError:
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="WARNING",
+                reason="protocol_rejected_msg2",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"Error": "rmap fail"}), 400
         except FileNotFoundError as e:
+            log_security_event(
+                "rmap_processing_failed",
+                severity="ERROR",
+                reason="watermark_source_file_missing",
+                endpoint=endpoint,
+                method=request.method,
+            )
             return jsonify({"error" : str(e)}), 500
         except Exception as e:
-            return jsonify({
-                "error": f"rmap watermark creation failed: {e}"
-            }), 500
+            log_security_event(
+                "rmap_handshake_failed",
+                severity="ERROR",
+                reason="internal_error_processing_msg2",
+                endpoint=endpoint,
+                method=request.method,
+            )
+            return jsonify({"error": f"rmap watermark creation failed: {e}"}), 500
     
 
     #=cant have document twice as get-document already taken
