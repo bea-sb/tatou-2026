@@ -1115,39 +1115,21 @@ def create_app():
     @app.post("/api/create-watermark/<int:document_id>")
     @require_auth
     def create_watermark(document_id: int | None = None):
-        """
-        Create a new watermarked version of a document.
-
-        JSON body:
-        {
-            "method": "xmp-visible",
-            "intended_for": "Alice",
-            "position": "bottom-right",
-            "secret": "my secret",
-            "key": "my key"
-        }
-
-        `intended_for` is optional. If omitted or empty, the
-        xmp-visible method uses its default visible watermark text.
-        """
+        
         if not getattr(g, "user", None):
             return jsonify({"error": "Authentication required"}), 401
 
         data = request.get_json(silent=True) or {}
 
-        # ---------------------------------------------------------
-        # Read request values
-        # ---------------------------------------------------------
-
+        #Read request values
+        
         method = data.get("method")
         intended_for = data.get("intended_for", "")
         position = data.get("position") or "bottom-right"
         secret = data.get("secret")
         key = data.get("key")
 
-        # ---------------------------------------------------------
-        # Validate required values
-        # ---------------------------------------------------------
+        #Validate required values
 
         if (
             not method
@@ -1160,7 +1142,7 @@ def create_app():
                 "error": "method, secret, and key are required"
             }), 400
 
-        # intended_for is optional.
+        #intended_for is optional.
         if intended_for is None:
             intended_for = ""
 
@@ -1174,9 +1156,7 @@ def create_app():
                 "error": "position must be a string"
             }), 400
 
-        # ---------------------------------------------------------
-        # Resolve document
-        # ---------------------------------------------------------
+        #Resolve document
 
         if document_id is None:
             return jsonify({
@@ -1207,28 +1187,14 @@ def create_app():
                 "error": "Document file not found"
             }), 404
 
-        # ---------------------------------------------------------
-        # Build method-specific configuration
-        # ---------------------------------------------------------
-        #
-        # The abstract WatermarkingMethod interface only has:
-        #
-        #     position: str | None
-        #
-        # so we encode the additional `intended_for` value into
-        # that field.
-        #
-        # The concrete xmp-visible method knows how to decode it.
-        # ---------------------------------------------------------
+        #Build method-specific configuration
 
         watermark_position = json.dumps({
             "position": position,
             "intended_for": intended_for,
         })
 
-        # ---------------------------------------------------------
-        # Check whether the method can watermark this PDF
-        # ---------------------------------------------------------
+        #Check whether the method can watermark this PDF
 
         try:
             applicable = WMUtils.is_watermarking_applicable(
@@ -1253,9 +1219,7 @@ def create_app():
                 )
             }), 400
 
-        # ---------------------------------------------------------
-        # Apply watermark
-        # ---------------------------------------------------------
+        #Apply watermark
 
         try:
             wm_bytes = WMUtils.apply_watermark(
@@ -1274,9 +1238,7 @@ def create_app():
                 "error": f"Could not create watermark: {exc}"
             }), 400
 
-        # ---------------------------------------------------------
-        # Create output path
-        # ---------------------------------------------------------
+        #Create output path
 
         dest_dir = file_path.parent / "watermarks"
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -1310,29 +1272,13 @@ def create_app():
             dest_path = dest_dir / candidate
             counter += 1
 
-        # ---------------------------------------------------------
-        # Write generated PDF
-        # ---------------------------------------------------------
+        #Write generated PDF
 
         dest_path.write_bytes(wm_bytes)
 
-        # ---------------------------------------------------------
-        # Create version link
-        # ---------------------------------------------------------
+        #Create version link
 
         link = uuid.uuid4().hex
-
-        # ---------------------------------------------------------
-        # Store version metadata
-        # ---------------------------------------------------------
-        #
-        # IMPORTANT:
-        # We store the ORIGINAL position, not the internal JSON
-        # configuration.
-        #
-        # Also, for now this preserves your existing `secret`
-        # column behavior. Later I recommend storing NULL instead.
-        # ---------------------------------------------------------
 
         with get_engine().begin() as conn:
             result = conn.execute(
@@ -1369,9 +1315,7 @@ def create_app():
 
             version_id = result.lastrowid
 
-        # ---------------------------------------------------------
-        # Return result
-        # ---------------------------------------------------------
+        #Return result
 
         return jsonify({
             "id": version_id,
