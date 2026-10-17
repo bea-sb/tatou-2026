@@ -453,6 +453,7 @@ def create_app():
             "documentid": int(r.documentid),
             "link": r.link,
             "method": r.method,
+            "intended_for": r.intended_for,
         } for r in rows]
         return jsonify({"versions": versions}), 200
     
