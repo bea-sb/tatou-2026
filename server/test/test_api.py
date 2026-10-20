@@ -12,7 +12,7 @@ from werkzeug.security import generate_password_hash
 import server as server_module
 import io
 import datetime as dt
-from types import SimpleNamespace
+
 
 slugify = app.config["SLUGIFY"] #get THE FUCNTION
 sha256 = app.config["_SHA256_FILE"]
@@ -258,6 +258,18 @@ class FakeRowsEngine:
     def connect(self):
         return FakeRowsConnection(self.rows)
 
+### Helper functions to access closure variables of route functions for testing purposes ###
+
+def get_route_closure_vars(route_name):
+    view = app.view_functions[route_name]
+    return dict(zip(
+        view.__code__.co_freevars,
+        (cell.cell_contents for cell in view.__closure__ or ()),
+    ))
+
+
+def get_rmap_server():
+    return get_route_closure_vars("rmap_getlink_msg2")["server"]
 
 def test_healthz_route():
     client = app.test_client()
@@ -265,51 +277,6 @@ def test_healthz_route():
 
     assert resp.status_code == 200
     assert resp.is_json
-    
-def test_read_watermark_requires_authentication():
-    client = app.test_client()
-    resp = client.post("/api/read-watermark")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_delete_document_requires_authentication():
-    client = app.test_client()
-    resp = client.delete("/api/delete-document/9")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_rmap_initiate_rejects_missing_json():
-    client = app.test_client()
-    resp = client.post(
-        "/api/rmap-initiate",
-        content_type="application/json",
-    )
-
-    assert resp.status_code >= 400
-
-def test_read_watermark_denies_document_not_owned(monkeypatch):
-    client = authenticated_client(monkeypatch)
-
-    resp = client.post(
-        "/api/read-watermark/9",
-        json={"method": "test", "key": "test-key"},
-    )
-
-    assert resp.status_code == 404
-    assert resp.get_json()["error"] == "document not found"
-
-
-def test_delete_document_denies_document_not_owned(monkeypatch):
-    client = authenticated_client(monkeypatch)
-
-    resp = client.delete("/api/delete-document/9")
-
-    assert resp.status_code == 404
-    assert resp.get_json()["error"] == "document not found"
-
-
 
 
 def test_slugify(): #checks that work as intended
@@ -349,7 +316,8 @@ def test_staticFiles():
     client = app.test_client()
     resp = client.get("/index.html")
     assert resp.status_code == 200
-    
+
+### Login tests ###    
 
 def test_login_succ(monkeypatch): #200
     fake_user = SimpleNamespace(id =420, email= "test@test.yes", login= "testerUser", hpassword= generate_password_hash("test"))
@@ -358,6 +326,14 @@ def test_login_succ(monkeypatch): #200
     client = app.test_client()
     resp = client.post("/api/login", json={"email": "test@test.yes", "password": "test"})
     assert resp.status_code == 200
+
+def test_login_requires_credentials():
+    client = app.test_client()
+
+    resp = client.post("/api/login", json={})
+
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "email and password are required"
 
 #get_rmap_doc_id
 
@@ -462,41 +438,6 @@ def test_makeRmapWatermark(monkeypatch, tmp_path):
 
 
 
-
-
-def test_create_user_requires_fields():
-    client = app.test_client()
-
-    resp = client.post("/api/create-user", json={})
-
-    assert resp.status_code == 400
-    assert "required" in resp.get_json()["error"]
-
-
-def test_login_requires_credentials():
-    client = app.test_client()
-
-    resp = client.post("/api/login", json={})
-
-    assert resp.status_code == 400
-    assert resp.get_json()["error"] == "email and password are required"
-
-
-def test_list_documents_requires_authentication():
-    client = app.test_client()
-
-    resp = client.get("/api/list-documents")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_list_versions_requires_authentication():
-    client = app.test_client()
-
-    resp = client.get("/api/list-versions/11")
-
-    assert resp.status_code in (401, 403)
-
 def test_get_watermarking_methods_returns_json():
     client = app.test_client()
 
@@ -510,65 +451,7 @@ def test_get_watermarking_methods_returns_json():
     assert "count" in data
     assert data["count"] == len(data["methods"])
 
-
-def get_route_closure_vars(route_name):
-    view = app.view_functions[route_name]
-    return dict(zip(
-        view.__code__.co_freevars,
-        (cell.cell_contents for cell in view.__closure__ or ()),
-    ))
-
-
-def get_rmap_server():
-    return get_route_closure_vars("rmap_getlink_msg2")["server"]
-
-
-def test_rmap_getlink_msg2_returns_200(monkeypatch):
-    client = app.test_client()
-    view = app.view_functions["rmap_getlink_msg2"]
-
-    closure_vars = get_route_closure_vars("rmap_getlink_msg2")
-    rmap_server = closure_vars["server"]
-
-    # Mock the handshake so it doesn't perform real RMAP processing.
-    monkeypatch.setattr(
-        rmap_server,
-        "receiveMsg2",
-        lambda info: (
-            "test-identity",
-            "b" * 32,
-            {"status": "ok"},
-        ),
-    )
-
-    # Find the closure cell containing the local watermark function.
-    freevars = view.__code__.co_freevars
-    closure_cells = dict(zip(freevars, view.__closure__ or ()))
-
-    assert "make_rmap_watermark" in closure_cells, (
-        f"Available closure variables: {list(closure_cells)}"
-    )
-
-    watermark_cell = closure_cells["make_rmap_watermark"]
-    original_watermark_function = watermark_cell.cell_contents
-
-    # Replace it temporarily to prevent real database/file operations.
-    watermark_cell.cell_contents = lambda **kwargs: None
-
-    try:
-        resp = client.post(
-            "/api/rmap-get-link",
-            json={"msg2": "test-message"},
-        )
-    finally:
-        # Restore the original closure function.
-        watermark_cell.cell_contents = original_watermark_function
-
-    assert resp.status_code == 200, (
-        f"Response status: {resp.status_code}; "
-        f"response body: {resp.get_json()}"
-    )
-    assert resp.get_json() == {"status": "ok"}
+#### List documents tests ###
 
 def test_list_documents_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -603,6 +486,14 @@ def test_list_documents_returns_200(monkeypatch):
     assert document["sha256"] == "a" * 64
     assert document["size"] == 1024
 
+def test_list_documents_requires_authentication():
+    client = app.test_client()
+
+    resp = client.get("/api/list-documents")
+
+    assert resp.status_code in (401, 403)
+
+### List versions tests ###
 
 def test_list_versions_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -637,6 +528,13 @@ def test_list_versions_returns_200(monkeypatch):
     assert version["link"] == "a" * 32
     assert version["method"] == "xmp-visible"
     assert version["intended_for"] == "test-user"
+
+def test_list_versions_requires_authentication():
+    client = app.test_client()
+
+    resp = client.get("/api/list-versions/11")
+
+    assert resp.status_code in (401, 403)
 
 def test_list_all_versions_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -706,6 +604,483 @@ def test_get_document_returns_200(monkeypatch, tmp_path):
     assert "inline" in resp.headers.get("Content-Disposition", "").lower()
 
 
+def test_get_version_returns_200(monkeypatch, tmp_path):
+    client = app.test_client()
+
+    # Use a temporary storage directory and create a fake PDF
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+    pdf_path = tmp_path / "test-version.pdf"
+    pdf_content = b"%PDF-1.4\nTest watermarked PDF content\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    # Mock the database row returned by the Versions query
+    fake_version = SimpleNamespace(
+        link="test-version",
+        path=str(pdf_path),
+    )
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    resp = client.get("/api/get-version/test-version")
+
+    assert resp.status_code == 200
+    assert resp.mimetype == "application/pdf"
+    assert resp.data == pdf_content
+    assert resp.headers["Cache-Control"] == "private, max-age=0"
+    assert "inline" in resp.headers.get("Content-Disposition", "").lower()
+
+
+def test_create_watermark_returns_201(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary source PDF
+    pdf_path = tmp_path / "test-document.pdf"
+    pdf_content = b"%PDF-1.4\nTest source PDF\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+
+    # Fake document returned by the database lookup
+    fake_document = {
+        "id": 1,
+        "name": "test-document.pdf",
+        "path": str(pdf_path),
+    }
+
+    class FakeMappingResult:
+        def first(self):
+            return fake_document
+
+    class FakeInsertResult:
+        lastrowid = 42
+
+    class FakeWatermarkConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement)
+
+            if "SELECT id, name, path" in sql:
+                class Result:
+                    def mappings(self):
+                        return FakeMappingResult()
+                return Result()
+
+            if "INSERT INTO Versions" in sql:
+                return FakeInsertResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeWatermarkEngine:
+        def connect(self):
+            return FakeWatermarkConnection()
+
+        def begin(self):
+            return FakeWatermarkConnection()
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeWatermarkEngine(),
+    )
+
+    # Mock watermarking so no real watermarking is performed
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "is_watermarking_applicable",
+        lambda **kwargs: True,
+    )
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "apply_watermark",
+        lambda **kwargs: b"%PDF-1.4\nFake watermarked PDF\n%%EOF",
+    )
+
+    payload = {
+        "method": "test-method",
+        "intended_for": "Test User",
+        "position": "bottom-right",
+        "secret": "test-secret",
+        "key": "test-key",
+    }
+
+    resp = client.post(
+        "/api/create-watermark/1",
+        json=payload,
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+
+    data = resp.get_json()
+    assert data["id"] == 42
+    assert data["documentid"] == 1
+    assert len(data["link"]) == 32
+    assert data["intended_for"] == "Test User"
+    assert data["method"] == "test-method"
+    assert data["position"] == "bottom-right"
+    assert data["filename"].endswith(".pdf")
+    assert data["size"] == len(
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
+
+    # Verify the generated file was written
+    output_path = (
+        tmp_path
+        / "watermarks"
+        / data["filename"]
+    )
+    assert output_path.exists()
+    assert output_path.read_bytes() == (
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
+
+### Delete document tests ###
+
+def test_delete_document_returns_200(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary storage directory and document
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    pdf_path = storage_dir / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF\n%%EOF")
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", storage_dir)
+
+    # Fake database row returned by SELECT
+    fake_document = SimpleNamespace(
+        id=1,
+        ownerid=1,
+        name="test-document.pdf",
+        path=str(pdf_path),
+    )
+
+    class FakeDeleteResult:
+        def first(self):
+            return fake_document
+
+    class FakeDeleteConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+
+            if sql.startswith("SELECT"):
+                return FakeDeleteResult()
+
+            if sql.startswith("DELETE"):
+                return FakeDeleteResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeDeleteEngine:
+        def connect(self):
+            return FakeDeleteConnection()
+
+        def begin(self):
+            return FakeDeleteConnection()
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeDeleteEngine(),
+    )
+
+    resp = client.delete(
+        "/api/delete-document",
+        json={"id": 1},
+    )
+
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+
+    data = resp.get_json()
+    assert data["deleted"] is True
+    assert data["id"] == 1
+    assert data["file_deleted"] is True
+    assert data["file_missing"] is False
+    assert data["note"] is None
+
+    # Confirm the file was removed
+    assert not pdf_path.exists()
+
+def test_delete_document_requires_authentication():
+    client = app.test_client()
+    resp = client.delete("/api/delete-document/9")
+
+    assert resp.status_code in (401, 403)
+
+def test_delete_document_denies_document_not_owned(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    resp = client.delete("/api/delete-document/9")
+
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "document not found"
+
+### Create user tests ###
+
+def test_create_user_returns_201(monkeypatch):
+    class FakeInsertResult:
+        lastrowid = 42
+
+    class FakeSelectResult:
+        def one(self):
+            return SimpleNamespace(
+                id=42,
+                email="test@example.com",
+                login="test-user",
+            )
+
+    class FakeCreateUserConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+
+            if sql.startswith("INSERT INTO USERS"):
+                assert params["email"] == "test@example.com"
+                assert params["login"] == "test-user"
+                assert params["hpw"] != "test-password"
+                return FakeInsertResult()
+
+            if sql.startswith("SELECT ID, EMAIL, LOGIN FROM USERS"):
+                assert params["id"] == 42
+                return FakeSelectResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeCreateUserEngine:
+        def begin(self):
+            return FakeCreateUserConnection()
+
+    monkeypatch.setitem(
+        app.config, "_ENGINE", FakeCreateUserEngine()
+    )
+
+    client = app.test_client()
+    resp = client.post(
+        "/api/create-user",
+        json={
+            "email": " TEST@EXAMPLE.COM ",
+            "login": "test-user",
+            "password": "test-password",
+        },
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+    assert resp.get_json() == {
+        "id": 42,
+        "email": "test@example.com",
+        "login": "test-user",
+    }
+
+def test_create_user_requires_fields():
+    client = app.test_client()
+
+    resp = client.post("/api/create-user", json={})
+
+    assert resp.status_code == 400
+    assert "required" in resp.get_json()["error"]
+
+### Read watermark tests ###
+
+def test_read_watermark_returns_201(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary PDF inside storage.
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    pdf_path = storage_dir / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF\n%%EOF")
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", str(storage_dir))
+
+    # Fake the document returned by the database.
+    fake_document = SimpleNamespace(
+        id=1,
+        name="test-document.pdf",
+        path=str(pdf_path),
+    )
+
+    class FakeReadResult:
+        def first(self):
+            return fake_document
+
+    class FakeReadConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+            assert "SELECT ID, NAME, PATH" in sql
+            assert "FROM DOCUMENTS" in sql
+            assert params["id"] == 1
+            assert params["uid"] == 1
+            return FakeReadResult()
+
+    class FakeReadEngine:
+        def connect(self):
+            return FakeReadConnection()
+
+    monkeypatch.setitem(app.config, "_ENGINE", FakeReadEngine())
+
+    # Mock watermark reading so the test doesn't process a real watermark.
+    def fake_read_watermark(method, pdf, key):
+        assert method == "LSB"
+        assert pdf == str(pdf_path)
+        assert key == "test-key"
+        return "my-secret"
+
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "read_watermark",
+        staticmethod(fake_read_watermark),
+    )
+
+    resp = client.post(
+        "/api/read-watermark",
+        json={
+            "id": 1,
+            "method": "LSB",
+            "key": "test-key",
+            "position": "bottom-right",
+        },
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+    assert resp.get_json() == {
+        "documentid": 1,
+        "secret": "my-secret",
+        "method": "LSB",
+        "position": "bottom-right",
+    }
+
+def test_read_watermark_requires_authentication():
+    client = app.test_client()
+    resp = client.post("/api/read-watermark")
+
+    assert resp.status_code in (401, 403)
+
+def test_read_watermark_denies_document_not_owned(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    resp = client.post(
+        "/api/read-watermark/9",
+        json={"method": "test", "key": "test-key"},
+    )
+
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "document not found"
+
+### RMAP tests ###
+
+### RMAP initiate tests ###
+
+def test_rmap_initiate_returns_200(monkeypatch):
+    view = app.view_functions["rmap_initiate_msg1"]
+    closure_cells = dict(
+        zip(view.__code__.co_freevars, view.__closure__ or ())
+    )
+    rmap_server = closure_cells["server"].cell_contents
+
+    def fake_receive_msg1(info):
+        assert info == {"payload": "test-payload"}
+        return "test-identity", {
+            "payload": "response-payload",
+            "message": "msg2",
+        }
+
+    monkeypatch.setattr(rmap_server, "receiveMsg1", fake_receive_msg1)
+
+    client = app.test_client()
+    response = client.post(
+        "/api/rmap-initiate",
+        json={"payload": "test-payload"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "payload": "response-payload",
+        "message": "msg2",
+    }
+
+def test_rmap_initiate_rejects_missing_json():
+    client = app.test_client()
+    resp = client.post(
+        "/api/rmap-initiate",
+        content_type="application/json",
+    )
+
+    assert resp.status_code >= 400
+
+### RMAP get link tests ###
+
+def test_rmap_getlink_msg2_returns_200(monkeypatch):
+    client = app.test_client()
+    view = app.view_functions["rmap_getlink_msg2"]
+
+    closure_vars = get_route_closure_vars("rmap_getlink_msg2")
+    rmap_server = closure_vars["server"]
+
+    # Mock the handshake so it doesn't perform real RMAP processing.
+    monkeypatch.setattr(
+        rmap_server,
+        "receiveMsg2",
+        lambda info: (
+            "test-identity",
+            "b" * 32,
+            {"status": "ok"},
+        ),
+    )
+
+    # Find the closure cell containing the local watermark function.
+    freevars = view.__code__.co_freevars
+    closure_cells = dict(zip(freevars, view.__closure__ or ()))
+
+    assert "make_rmap_watermark" in closure_cells, (
+        f"Available closure variables: {list(closure_cells)}"
+    )
+
+    watermark_cell = closure_cells["make_rmap_watermark"]
+    original_watermark_function = watermark_cell.cell_contents
+
+    # Replace it temporarily to prevent real database/file operations.
+    watermark_cell.cell_contents = lambda **kwargs: None
+
+    try:
+        resp = client.post(
+            "/api/rmap-get-link",
+            json={"msg2": "test-message"},
+        )
+    finally:
+        # Restore the original closure function.
+        watermark_cell.cell_contents = original_watermark_function
+
+    assert resp.status_code == 200, (
+        f"Response status: {resp.status_code}; "
+        f"response body: {resp.get_json()}"
+    )
+    assert resp.get_json() == {"status": "ok"}
+
+### RMAP get doc tests ###
 
 def test_get_doc_returns_200(monkeypatch, tmp_path):
     client = app.test_client()
@@ -760,32 +1135,3 @@ def test_get_doc_returns_200(monkeypatch, tmp_path):
     assert "inline" in resp.headers.get(
         "Content-Disposition", ""
     ).lower()
-
-
-def test_get_version_returns_200(monkeypatch, tmp_path):
-    client = app.test_client()
-
-    # Use a temporary storage directory and create a fake PDF
-    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
-    pdf_path = tmp_path / "test-version.pdf"
-    pdf_content = b"%PDF-1.4\nTest watermarked PDF content\n%%EOF"
-    pdf_path.write_bytes(pdf_content)
-
-    # Mock the database row returned by the Versions query
-    fake_version = SimpleNamespace(
-        link="test-version",
-        path=str(pdf_path),
-    )
-    monkeypatch.setitem(
-        app.config,
-        "_ENGINE",
-        FakeRowsEngine([fake_version]),
-    )
-
-    resp = client.get("/api/get-version/test-version")
-
-    assert resp.status_code == 200
-    assert resp.mimetype == "application/pdf"
-    assert resp.data == pdf_content
-    assert resp.headers["Cache-Control"] == "private, max-age=0"
-    assert "inline" in resp.headers.get("Content-Disposition", "").lower()
