@@ -341,3 +341,105 @@ def test_list_documents_returns_200(monkeypatch):
     assert document["sha256"] == "a" * 64
     assert document["size"] == 1024
 
+
+def test_list_versions_returns_200(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    fake_version = SimpleNamespace(
+        id=7,
+        documentid=1,
+        link="a" * 32,
+        intended_for="test-user",
+        secret="test-secret",
+        method="xmp-visible",
+    )
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    resp = client.get("/api/list-versions/1")
+
+    assert resp.status_code == 200
+    assert resp.is_json
+
+    data = resp.get_json()
+    assert "versions" in data
+    assert len(data["versions"]) == 1
+
+    version = data["versions"][0]
+    assert version["id"] == 7
+    assert version["documentid"] == 1
+    assert version["link"] == "a" * 32
+    assert version["method"] == "xmp-visible"
+    assert version["intended_for"] == "test-user"
+
+def test_list_all_versions_returns_200(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    fake_version = SimpleNamespace(
+        id=7,
+        documentid=1,
+        link="b" * 32,
+        intended_for="test-user",
+        method="xmp-visible",
+    )
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    resp = client.get("/api/list-all-versions")
+
+    assert resp.status_code == 200
+    assert resp.is_json
+
+    data = resp.get_json()
+    assert "versions" in data
+    assert len(data["versions"]) == 1
+
+    version = data["versions"][0]
+    assert version["id"] == 7
+    assert version["documentid"] == 1
+    assert version["link"] == "b" * 32
+    assert version["intended_for"] == "test-user"
+    assert version["method"] == "xmp-visible"
+
+
+def test_get_document_returns_200(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary file inside the configured storage directory.
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+    pdf_path = tmp_path / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF content\n%%EOF")
+
+    fake_document = SimpleNamespace(
+        id=1,
+        name="test-document.pdf",
+        path=str(pdf_path),
+        sha256_hex="a" * 64,
+        size=31,
+    )
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_document]),
+    )
+
+    resp = client.get("/api/get-document/1")
+
+    assert resp.status_code == 200
+    assert resp.mimetype == "application/pdf"
+    assert resp.data == b"%PDF-1.4\nTest PDF content\n%%EOF"
+    assert resp.headers["Cache-Control"] == (
+        "private, max-age=0, must-revalidate"
+    )
+    assert resp.headers["ETag"] == f'"{"a" * 64}"'
+    assert "inline" in resp.headers.get("Content-Disposition", "").lower()
+
