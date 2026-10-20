@@ -12,7 +12,7 @@ from werkzeug.security import generate_password_hash
 import server as server_module
 import io
 import datetime as dt
-from types import SimpleNamespace
+
 
 slugify = app.config["SLUGIFY"] #get THE FUCNTION
 sha256 = app.config["_SHA256_FILE"]
@@ -740,3 +740,75 @@ def test_create_watermark_returns_201(monkeypatch, tmp_path):
     assert output_path.read_bytes() == (
         b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
     )
+
+
+def test_delete_document_returns_200(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary storage directory and document
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    pdf_path = storage_dir / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF\n%%EOF")
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", storage_dir)
+
+    # Fake database row returned by SELECT
+    fake_document = SimpleNamespace(
+        id=1,
+        ownerid=1,
+        name="test-document.pdf",
+        path=str(pdf_path),
+    )
+
+    class FakeDeleteResult:
+        def first(self):
+            return fake_document
+
+    class FakeDeleteConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+
+            if sql.startswith("SELECT"):
+                return FakeDeleteResult()
+
+            if sql.startswith("DELETE"):
+                return FakeDeleteResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeDeleteEngine:
+        def connect(self):
+            return FakeDeleteConnection()
+
+        def begin(self):
+            return FakeDeleteConnection()
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeDeleteEngine(),
+    )
+
+    resp = client.delete(
+        "/api/delete-document",
+        json={"id": 1},
+    )
+
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+
+    data = resp.get_json()
+    assert data["deleted"] is True
+    assert data["id"] == 1
+    assert data["file_deleted"] is True
+    assert data["file_missing"] is False
+    assert data["note"] is None
+
+    # Confirm the file was removed
+    assert not pdf_path.exists()
