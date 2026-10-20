@@ -947,3 +947,31 @@ def test_read_watermark_returns_201(monkeypatch, tmp_path):
         "method": "LSB",
         "position": "bottom-right",
     }
+
+def test_rmap_initiate_returns_200(monkeypatch):
+    view = app.view_functions["rmap_initiate_msg1"]
+    closure_cells = dict(
+        zip(view.__code__.co_freevars, view.__closure__ or ())
+    )
+    rmap_server = closure_cells["server"].cell_contents
+
+    def fake_receive_msg1(info):
+        assert info == {"payload": "test-payload"}
+        return "test-identity", {
+            "payload": "response-payload",
+            "message": "msg2",
+        }
+
+    monkeypatch.setattr(rmap_server, "receiveMsg1", fake_receive_msg1)
+
+    client = app.test_client()
+    response = client.post(
+        "/api/rmap-initiate",
+        json={"payload": "test-payload"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "payload": "response-payload",
+        "message": "msg2",
+    }
