@@ -257,6 +257,7 @@ def test_home():
     assert b"<html lang=" in resp.data.lower()
     assert b"Upload PDFs, create watermarked versions, and share secure public links." in resp.data
 
+'''''''''''''''
 #Get-FileHash "C:\path\to\your-file.ext" -Algorithm SHA256
 def test_sha256():
     path = Path("storage/Group_7.pdf")
@@ -267,6 +268,7 @@ def test_sha256():
     group7pdf=group7pdf.lower()
 
     assert group7pdf == shaCon
+'''''''''
 
 def test_staticFiles():
     #resp = staticFiles("/index.html")
@@ -600,3 +602,32 @@ def test_get_doc_returns_200(monkeypatch, tmp_path):
     assert "inline" in resp.headers.get(
         "Content-Disposition", ""
     ).lower()
+
+
+def test_get_version_returns_200(monkeypatch, tmp_path):
+    client = app.test_client()
+
+    # Use a temporary storage directory and create a fake PDF
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+    pdf_path = tmp_path / "test-version.pdf"
+    pdf_content = b"%PDF-1.4\nTest watermarked PDF content\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    # Mock the database row returned by the Versions query
+    fake_version = SimpleNamespace(
+        link="test-version",
+        path=str(pdf_path),
+    )
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    resp = client.get("/api/get-version/test-version")
+
+    assert resp.status_code == 200
+    assert resp.mimetype == "application/pdf"
+    assert resp.data == pdf_content
+    assert resp.headers["Cache-Control"] == "private, max-age=0"
+    assert "inline" in resp.headers.get("Content-Disposition", "").lower()
