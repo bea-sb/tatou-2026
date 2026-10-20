@@ -133,41 +133,9 @@ class FakeWatermarkEngin:
     def begin(self):
         return self.connection
 
-
-def test_upload_document_returns_201(monkeypatch, tmp_path):
-    client = authenticated_client(monkeypatch)
-
-    # Use temporary storage and a fake database.
-    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
-    monkeypatch.setitem(app.config, "_ENGINE", FakeUploadEngine())
-
-    response = client.post(
-        "/api/upload-document",
-        data={
-            "file": (io.BytesIO(b"Hello, Tatou!"), "test.txt"),
-            "name": "test-document",
-        },
-        content_type="multipart/form-data",
-    )
-
-    assert response.status_code == 201
-    assert response.is_json
-
-    data = response.get_json()
-    assert data["id"] == 1
-    assert data["name"] == "test-document"
-    assert data["size"] == 13
-    assert data["sha256"] == "a" * 64
-
-    # Confirm the uploaded file was saved to temporary storage.
-    user_dir = tmp_path / "files" / "test-user"
-    assert user_dir.exists()
-    assert len(list(user_dir.iterdir())) == 1
-
 class FakeResult:
     def first(self):
         return None
-
 
 class FakeConnection:
     def __enter__(self):
@@ -179,11 +147,9 @@ class FakeConnection:
     def execute(self, *args, **kwargs):
         return FakeResult()
 
-
 class FakeEngine:
     def connect(self):
         return FakeConnection()
-
 
 class FakeResult2:
     def __init__(self, row=None):
@@ -206,7 +172,6 @@ class FakeEngine2:
         self.row = row
     def connect(self):
         return FakeConnection2(self.row)
-
 
 def authenticated_client(monkeypatch):
     # Replace the database engine with a fake that finds no owned document.
@@ -267,9 +232,10 @@ def get_route_closure_vars(route_name):
         (cell.cell_contents for cell in view.__closure__ or ()),
     ))
 
-
 def get_rmap_server():
     return get_route_closure_vars("rmap_getlink_msg2")["server"]
+
+### Tests for the server routes and some helper functions ###
 
 def test_healthz_route():
     client = app.test_client()
@@ -277,7 +243,6 @@ def test_healthz_route():
 
     assert resp.status_code == 200
     assert resp.is_json
-
 
 def test_slugify(): #checks that work as intended
     assert slugify("I absolutely lobe bananas") == "i-absolutely-lobe-bananas"
@@ -335,107 +300,35 @@ def test_login_requires_credentials():
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "email and password are required"
 
-#get_rmap_doc_id
+def test_upload_document_returns_201(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
 
-def test_rmapDocId(monkeypatch, tmp_path):
-    #dont need authenticated user
-    #is not auth
+    # Use temporary storage and a fake database.
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+    monkeypatch.setitem(app.config, "_ENGINE", FakeUploadEngine())
 
-    #fakePDF instead
-    pdf_path = tmp_path / "test-document.pdf"
-    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF content\n%%EOF")
-
-    monkeypatch.setitem(
-        app.config,
-        "_ENGINE",
-        FakeRMAPEngin(pdf_path)
+    response = client.post(
+        "/api/upload-document",
+        data={
+            "file": (io.BytesIO(b"Hello, Tatou!"), "test.txt"),
+            "name": "test-document",
+        },
+        content_type="multipart/form-data",
     )
 
-    #resp = client.get("/api/get-document/1")
+    assert response.status_code == 201
+    assert response.is_json
 
-    resp = getRmapDocId(pdf_path)
-    assert resp == 1
+    data = response.get_json()
+    assert data["id"] == 1
+    assert data["name"] == "test-document"
+    assert data["size"] == 13
+    assert data["sha256"] == "a" * 64
 
-
-
-#make_rmap_watermark
-
-def test_makeRmapWatermark(monkeypatch, tmp_path):
-
-    pdf_path = tmp_path / "orgi.pdf"
-    pdf_path.write_bytes(
-        b"%PDF-1.4\nOriginal PDF\n%%EOF"
-    )
-
-    fake_pdf_bytes = (
-        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
-    )
-
-    fake_engine = FakeWatermarkEngin(pdf_path)
-
-    monkeypatch.setitem(
-        app.config, "_ENGINE", fake_engine
-    )
-
-    # Use the actual environment variable read by the function.
-    monkeypatch.setenv("RMAP_KEY", "test-only-key")
-
-    # Mock watermark processing so no real watermark is created.
-    monkeypatch.setattr(
-        server_module.WMUtils,
-        "is_watermarking_applicable",
-        lambda **kwargs: True,
-    )
-
-    monkeypatch.setattr(
-        server_module.WMUtils,
-        "apply_watermark",
-        lambda **kwargs: fake_pdf_bytes,
-    )
-
-    # Point the function at our temporary original PDF.
-    closure = dict(zip(
-        makeRmapWatrmrk.__code__.co_freevars,
-        makeRmapWatrmrk.__closure__ or (),
-    ))
-
-    if "RMAP_DOC" in closure:
-        cell = closure["RMAP_DOC"]
-        old_value = cell.cell_contents
-        cell.cell_contents = str(pdf_path)
-
-        try:
-            resp = makeRmapWatrmrk(
-                identity="testUsr",
-                link="a" * 32,
-            )
-        finally:
-            cell.cell_contents = old_value
-    else:
-        monkeypatch.setattr(
-            server_module, "RMAP_DOC", str(pdf_path)
-        )
-
-        resp = makeRmapWatrmrk(
-            identity="testUsr",
-            link="a" * 32,
-        )
-
-    # Assert: file was created with the expected contents.
-    assert resp.is_file()
-    assert resp.name == f"orgi__{'a' * 32}.pdf"
-    assert resp.read_bytes() == fake_pdf_bytes
-
-    # Assert: database insertion happened.
-    inserted = fake_engine.connection.inserted_params
-    assert inserted is not None
-    assert inserted["documentid"] == 1
-    assert inserted["intended_for"] == "testUsr"
-    assert inserted["link"] == "a" * 32
-    assert inserted["method"] == "xmp-visible"
-    assert inserted["path"] == str(resp)
-
-
+    # Confirm the uploaded file was saved to temporary storage.
+    user_dir = tmp_path / "files" / "test-user"
+    assert user_dir.exists()
+    assert len(list(user_dir.iterdir())) == 1
 
 
 def test_get_watermarking_methods_returns_json():
@@ -1135,3 +1028,101 @@ def test_get_doc_returns_200(monkeypatch, tmp_path):
     assert "inline" in resp.headers.get(
         "Content-Disposition", ""
     ).lower()
+
+#get_rmap_doc_id
+
+def test_rmapDocId(monkeypatch, tmp_path):
+    #dont need authenticated user
+    #is not auth
+
+    #fakePDF instead
+    pdf_path = tmp_path / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF content\n%%EOF")
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRMAPEngin(pdf_path)
+    )
+
+    #resp = client.get("/api/get-document/1")
+
+    resp = getRmapDocId(pdf_path)
+    assert resp == 1
+
+#make_rmap_watermark
+
+def test_makeRmapWatermark(monkeypatch, tmp_path):
+
+    pdf_path = tmp_path / "orgi.pdf"
+    pdf_path.write_bytes(
+        b"%PDF-1.4\nOriginal PDF\n%%EOF"
+    )
+
+    fake_pdf_bytes = (
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
+
+    fake_engine = FakeWatermarkEngin(pdf_path)
+
+    monkeypatch.setitem(
+        app.config, "_ENGINE", fake_engine
+    )
+
+    # Use the actual environment variable read by the function.
+    monkeypatch.setenv("RMAP_KEY", "test-only-key")
+
+    # Mock watermark processing so no real watermark is created.
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "is_watermarking_applicable",
+        lambda **kwargs: True,
+    )
+
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "apply_watermark",
+        lambda **kwargs: fake_pdf_bytes,
+    )
+
+    # Point the function at our temporary original PDF.
+    closure = dict(zip(
+        makeRmapWatrmrk.__code__.co_freevars,
+        makeRmapWatrmrk.__closure__ or (),
+    ))
+
+    if "RMAP_DOC" in closure:
+        cell = closure["RMAP_DOC"]
+        old_value = cell.cell_contents
+        cell.cell_contents = str(pdf_path)
+
+        try:
+            resp = makeRmapWatrmrk(
+                identity="testUsr",
+                link="a" * 32,
+            )
+        finally:
+            cell.cell_contents = old_value
+    else:
+        monkeypatch.setattr(
+            server_module, "RMAP_DOC", str(pdf_path)
+        )
+
+        resp = makeRmapWatrmrk(
+            identity="testUsr",
+            link="a" * 32,
+        )
+
+    # Assert: file was created with the expected contents.
+    assert resp.is_file()
+    assert resp.name == f"orgi__{'a' * 32}.pdf"
+    assert resp.read_bytes() == fake_pdf_bytes
+
+    # Assert: database insertion happened.
+    inserted = fake_engine.connection.inserted_params
+    assert inserted is not None
+    assert inserted["documentid"] == 1
+    assert inserted["intended_for"] == "testUsr"
+    assert inserted["link"] == "a" * 32
+    assert inserted["method"] == "xmp-visible"
+    assert inserted["path"] == str(resp)
