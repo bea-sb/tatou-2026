@@ -536,8 +536,7 @@ def create_app():
             raise ValueError(f"RMAP source doc not registeres: {pdf_path}")
         return row.id
 
-
-    
+    app.config["GET_RMAP_DOC_ID"] = get_rmap_doc_id
         
     #= make sure watermodel is chanegs
     #cant habe jsonify if iys not a @app thingy needs to make into exceptions
@@ -653,6 +652,7 @@ def create_app():
 
         return dest_path
 
+    app.config["MAKE_RMAP_WATERMARK"] = make_rmap_watermark
 
     #=msg1
     @app.post("/api/rmap-initiate")

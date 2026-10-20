@@ -17,6 +17,8 @@ from types import SimpleNamespace
 slugify = app.config["SLUGIFY"] #get THE FUCNTION
 sha256 = app.config["_SHA256_FILE"]
 staticFiles = app.config["STATIC_FILES"]
+getRmapDocId = app.config["GET_RMAP_DOC_ID"]
+makeRmapWatrmrk = app.config["MAKE_RMAP_WATERMARK"]
 
 class FakeUploadResult:
     def __init__(self, row=None, scalar_value=None):
@@ -62,6 +64,74 @@ class FakeUploadEngine:
         return FakeUploadConnection()
 
 
+class FakeRmapRes:
+    def __init__(self, row=None, rows=None):
+        self.row = row
+        self.rows = rows or []
+
+    def first(self):
+        return self.row
+
+    def fetchall(self):
+        return self.rows
+
+class FakeRmapCon:
+    def __init__(self, pdf_path):
+        self.pdf_path = str(Path(pdf_path).resolve())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def execute(self, statement, params=None):
+        sql = str(statement)
+
+        if "SELECT DATABASE(), @@hostname" in sql:
+            return FakeRmapRes(
+                row=("test_database", "test_host")
+            )
+        if "WHERE path = :path" in sql:
+            if params["path"] == self.pdf_path:
+                return FakeRmapRes(
+                    row=SimpleNamespace(
+                        id=1,
+                        path=self.pdf_path,
+                    )
+                )
+            return FakeRmapRes()
+        if "FROM Documents" in sql:
+            return FakeRmapRes(rows=[])
+        return FakeRmapRes()
+
+class FakeRMAPEngin:
+        def __init__(self,pdf_path):
+            self.pdf_path=pdf_path
+        def connect(self):
+            return FakeRmapCon(self.pdf_path)
+
+class FakeWatrmrkCon:
+    def __init__(self):
+        self.inserted_params = None
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+    def execute(self, statement, params=None):
+        sql = str(statement)
+        if "INSERT INTO Versions" in sql:
+            self.inserted_params = params
+        return FakeRmapRes()
+
+class FakeWatermarkEngin:
+    def __init__(self,pdf_path):
+        self.pdf_path = str(Path(pdf_path).resolve())
+        self.connection = FakeWatrmrkCon()
+    def connect(self):
+        return FakeRmapCon(self.pdf_path)
+    def begin(self):
+        return self.connection
 
 
 def test_upload_document_returns_201(monkeypatch, tmp_path):
@@ -291,24 +361,105 @@ def test_login_succ(monkeypatch): #200
 
 #get_rmap_doc_id
 
-def test_rmapDocId():
-    client = app.test_client()
+def test_rmapDocId(monkeypatch, tmp_path):
+    #dont need authenticated user
+    #is not auth
 
     #fakePDF instead
-    
+    pdf_path = tmp_path / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF content\n%%EOF")
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRMAPEngin(pdf_path)
+    )
+
+    #resp = client.get("/api/get-document/1")
+
+    resp = getRmapDocId(pdf_path)
+    assert resp == 1
 
 
-
-    resp = ""
-    assert resp.status_code == 200
 
 #make_rmap_watermark
 
-def test_makeRmapWatermark():
-    ""
+def test_makeRmapWatermark(monkeypatch, tmp_path):
 
-    #resp = ""
-    #assert resp.status_code == 200
+    pdf_path = tmp_path / "orgi.pdf"
+    pdf_path.write_bytes(
+        b"%PDF-1.4\nOriginal PDF\n%%EOF"
+    )
+
+    fake_pdf_bytes = (
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
+
+    fake_engine = FakeWatermarkEngin(pdf_path)
+
+    monkeypatch.setitem(
+        app.config, "_ENGINE", fake_engine
+    )
+
+    # Use the actual environment variable read by the function.
+    monkeypatch.setenv("RMAP_KEY", "test-only-key")
+
+    # Mock watermark processing so no real watermark is created.
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "is_watermarking_applicable",
+        lambda **kwargs: True,
+    )
+
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "apply_watermark",
+        lambda **kwargs: fake_pdf_bytes,
+    )
+
+    # Point the function at our temporary original PDF.
+    closure = dict(zip(
+        makeRmapWatrmrk.__code__.co_freevars,
+        makeRmapWatrmrk.__closure__ or (),
+    ))
+
+    if "RMAP_DOC" in closure:
+        cell = closure["RMAP_DOC"]
+        old_value = cell.cell_contents
+        cell.cell_contents = str(pdf_path)
+
+        try:
+            resp = makeRmapWatrmrk(
+                identity="testUsr",
+                link="a" * 32,
+            )
+        finally:
+            cell.cell_contents = old_value
+    else:
+        monkeypatch.setattr(
+            server_module, "RMAP_DOC", str(pdf_path)
+        )
+
+        resp = makeRmapWatrmrk(
+            identity="testUsr",
+            link="a" * 32,
+        )
+
+    # Assert: file was created with the expected contents.
+    assert resp.is_file()
+    assert resp.name == f"orgi__{'a' * 32}.pdf"
+    assert resp.read_bytes() == fake_pdf_bytes
+
+    # Assert: database insertion happened.
+    inserted = fake_engine.connection.inserted_params
+    assert inserted is not None
+    assert inserted["documentid"] == 1
+    assert inserted["intended_for"] == "testUsr"
+    assert inserted["link"] == "a" * 32
+    assert inserted["method"] == "xmp-visible"
+    assert inserted["path"] == str(resp)
+
+
 
 
 
