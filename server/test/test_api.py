@@ -307,7 +307,6 @@ def test_rmap_getlink_msg2_returns_200(monkeypatch):
     )
     assert resp.get_json() == {"status": "ok"}
 
-
 def test_list_documents_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
 
@@ -443,3 +442,58 @@ def test_get_document_returns_200(monkeypatch, tmp_path):
     assert resp.headers["ETag"] == f'"{"a" * 64}"'
     assert "inline" in resp.headers.get("Content-Disposition", "").lower()
 
+
+
+def test_get_doc_returns_200(monkeypatch, tmp_path):
+    client = app.test_client()
+
+    # Create the temporary watermarks directory
+    watermarks_dir = tmp_path / "watermarks"
+    watermarks_dir.mkdir()
+
+    # Create a fake watermarked PDF
+    pdf_path = watermarks_dir / "test-watermarked.pdf"
+    pdf_content = b"%PDF-1.4\nTest RMAP watermarked PDF\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    # Valid 32-character hexadecimal token
+    token = "a" * 32
+
+    # Mock the database row
+    fake_version = SimpleNamespace(
+        link=token,
+        intended_for="test-user",
+        path=str(pdf_path),
+    )
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    # Patch the closure cell captured by the get_doc route.
+    view = app.view_functions["get_doc"]
+    freevars = view.__code__.co_freevars
+    closure_cells = dict(zip(freevars, view.__closure__ or ()))
+
+    assert "RMAP_DOC" in closure_cells
+
+    rmap_doc_cell = closure_cells["RMAP_DOC"]
+    original_rmap_doc = rmap_doc_cell.cell_contents
+
+    rmap_doc_cell.cell_contents = str(tmp_path / "rmap-document.pdf")
+
+    try:
+        resp = client.get(f"/get-doc/{token}")
+    finally:
+        # Restore the original value after the request
+        rmap_doc_cell.cell_contents = original_rmap_doc
+
+    # Verify the PDF response
+    assert resp.status_code == 200
+    assert resp.mimetype == "application/pdf"
+    assert resp.data == pdf_content
+    assert "inline" in resp.headers.get(
+        "Content-Disposition", ""
+    ).lower()
