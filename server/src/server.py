@@ -33,13 +33,6 @@ from rmap import ( #=we want those seperate error messages thingies if need be
 )
 
 
-import pickle as _std_pickle
-try:
-    import dill as _pickle  # allows loading classes not importable by module path
-except Exception:  # dill is optional
-    _pickle = _std_pickle
-
-
 import watermarking_utils as WMUtils
 from watermarking_method import WatermarkingMethod
 #from watermarking_utils import METHODS, apply_watermark, read_watermark, explore_pdf, is_watermarking_applicable, get_method
@@ -183,16 +176,24 @@ def create_app():
                 h.update(chunk)
         return h.hexdigest()
 
+    app.config["_SHA256_FILE"] = _sha256_file
+
     def slugify(value: str) -> str:
         value = value.strip().lower()
         value = re.sub(r"[^a-z0-9]+", "-", value)
         return value.strip("-") or "individual-copy" 
 
+    #for testing
+    app.config["SLUGIFY"] = slugify
+
+    
     # --- Routes ---
     
     @app.route("/<path:filename>")
     def static_files(filename):
         return app.send_static_file(filename)
+
+    app.config["STATIC_FILES"] = static_files
 
     @app.route("/")
     def home():
