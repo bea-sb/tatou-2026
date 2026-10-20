@@ -62,6 +62,8 @@ class FakeUploadEngine:
         return FakeUploadConnection()
 
 
+
+
 def test_upload_document_returns_201(monkeypatch, tmp_path):
     client = authenticated_client(monkeypatch)
 
@@ -288,10 +290,15 @@ def test_login_succ(monkeypatch): #200
 #get_rmap_doc_id
 
 def test_rmapDocId():
-    ""
+    client = app.test_client()
 
-    #resp = ""
-    #assert resp.status_code == 200
+    #fakePDF instead
+    
+
+
+
+    resp = ""
+    assert resp.status_code == 200
 
 #make_rmap_watermark
 
