@@ -186,6 +186,18 @@ class FakeRowsEngine:
     def connect(self):
         return FakeRowsConnection(self.rows)
 
+### Helper functions to access closure variables of route functions for testing purposes ###
+
+def get_route_closure_vars(route_name):
+    view = app.view_functions[route_name]
+    return dict(zip(
+        view.__code__.co_freevars,
+        (cell.cell_contents for cell in view.__closure__ or ()),
+    ))
+
+
+def get_rmap_server():
+    return get_route_closure_vars("rmap_getlink_msg2")["server"]
 
 def test_healthz_route():
     client = app.test_client()
@@ -193,51 +205,6 @@ def test_healthz_route():
 
     assert resp.status_code == 200
     assert resp.is_json
-    
-def test_read_watermark_requires_authentication():
-    client = app.test_client()
-    resp = client.post("/api/read-watermark")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_delete_document_requires_authentication():
-    client = app.test_client()
-    resp = client.delete("/api/delete-document/9")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_rmap_initiate_rejects_missing_json():
-    client = app.test_client()
-    resp = client.post(
-        "/api/rmap-initiate",
-        content_type="application/json",
-    )
-
-    assert resp.status_code >= 400
-
-def test_read_watermark_denies_document_not_owned(monkeypatch):
-    client = authenticated_client(monkeypatch)
-
-    resp = client.post(
-        "/api/read-watermark/9",
-        json={"method": "test", "key": "test-key"},
-    )
-
-    assert resp.status_code == 404
-    assert resp.get_json()["error"] == "document not found"
-
-
-def test_delete_document_denies_document_not_owned(monkeypatch):
-    client = authenticated_client(monkeypatch)
-
-    resp = client.delete("/api/delete-document/9")
-
-    assert resp.status_code == 404
-    assert resp.get_json()["error"] == "document not found"
-
-
 
 
 def test_slugify(): #checks that work as intended
@@ -277,7 +244,8 @@ def test_staticFiles():
     client = app.test_client()
     resp = client.get("/index.html")
     assert resp.status_code == 200
-    
+
+### Login tests ###    
 
 def test_login_succ(monkeypatch): #200
     fake_user = SimpleNamespace(id =420, email= "test@test.yes", login= "testerUser", hpassword= generate_password_hash("test"))
@@ -286,6 +254,14 @@ def test_login_succ(monkeypatch): #200
     client = app.test_client()
     resp = client.post("/api/login", json={"email": "test@test.yes", "password": "test"})
     assert resp.status_code == 200
+
+def test_login_requires_credentials():
+    client = app.test_client()
+
+    resp = client.post("/api/login", json={})
+
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "email and password are required"
 
 #get_rmap_doc_id
 
@@ -304,41 +280,6 @@ def test_makeRmapWatermark():
     #assert resp.status_code == 200
 
 
-
-
-def test_create_user_requires_fields():
-    client = app.test_client()
-
-    resp = client.post("/api/create-user", json={})
-
-    assert resp.status_code == 400
-    assert "required" in resp.get_json()["error"]
-
-
-def test_login_requires_credentials():
-    client = app.test_client()
-
-    resp = client.post("/api/login", json={})
-
-    assert resp.status_code == 400
-    assert resp.get_json()["error"] == "email and password are required"
-
-
-def test_list_documents_requires_authentication():
-    client = app.test_client()
-
-    resp = client.get("/api/list-documents")
-
-    assert resp.status_code in (401, 403)
-
-
-def test_list_versions_requires_authentication():
-    client = app.test_client()
-
-    resp = client.get("/api/list-versions/11")
-
-    assert resp.status_code in (401, 403)
-
 def test_get_watermarking_methods_returns_json():
     client = app.test_client()
 
@@ -352,65 +293,7 @@ def test_get_watermarking_methods_returns_json():
     assert "count" in data
     assert data["count"] == len(data["methods"])
 
-
-def get_route_closure_vars(route_name):
-    view = app.view_functions[route_name]
-    return dict(zip(
-        view.__code__.co_freevars,
-        (cell.cell_contents for cell in view.__closure__ or ()),
-    ))
-
-
-def get_rmap_server():
-    return get_route_closure_vars("rmap_getlink_msg2")["server"]
-
-
-def test_rmap_getlink_msg2_returns_200(monkeypatch):
-    client = app.test_client()
-    view = app.view_functions["rmap_getlink_msg2"]
-
-    closure_vars = get_route_closure_vars("rmap_getlink_msg2")
-    rmap_server = closure_vars["server"]
-
-    # Mock the handshake so it doesn't perform real RMAP processing.
-    monkeypatch.setattr(
-        rmap_server,
-        "receiveMsg2",
-        lambda info: (
-            "test-identity",
-            "b" * 32,
-            {"status": "ok"},
-        ),
-    )
-
-    # Find the closure cell containing the local watermark function.
-    freevars = view.__code__.co_freevars
-    closure_cells = dict(zip(freevars, view.__closure__ or ()))
-
-    assert "make_rmap_watermark" in closure_cells, (
-        f"Available closure variables: {list(closure_cells)}"
-    )
-
-    watermark_cell = closure_cells["make_rmap_watermark"]
-    original_watermark_function = watermark_cell.cell_contents
-
-    # Replace it temporarily to prevent real database/file operations.
-    watermark_cell.cell_contents = lambda **kwargs: None
-
-    try:
-        resp = client.post(
-            "/api/rmap-get-link",
-            json={"msg2": "test-message"},
-        )
-    finally:
-        # Restore the original closure function.
-        watermark_cell.cell_contents = original_watermark_function
-
-    assert resp.status_code == 200, (
-        f"Response status: {resp.status_code}; "
-        f"response body: {resp.get_json()}"
-    )
-    assert resp.get_json() == {"status": "ok"}
+#### List documents tests ###
 
 def test_list_documents_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -445,6 +328,14 @@ def test_list_documents_returns_200(monkeypatch):
     assert document["sha256"] == "a" * 64
     assert document["size"] == 1024
 
+def test_list_documents_requires_authentication():
+    client = app.test_client()
+
+    resp = client.get("/api/list-documents")
+
+    assert resp.status_code in (401, 403)
+
+### List versions tests ###
 
 def test_list_versions_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -479,6 +370,13 @@ def test_list_versions_returns_200(monkeypatch):
     assert version["link"] == "a" * 32
     assert version["method"] == "xmp-visible"
     assert version["intended_for"] == "test-user"
+
+def test_list_versions_requires_authentication():
+    client = app.test_client()
+
+    resp = client.get("/api/list-versions/11")
+
+    assert resp.status_code in (401, 403)
 
 def test_list_all_versions_returns_200(monkeypatch):
     client = authenticated_client(monkeypatch)
@@ -546,62 +444,6 @@ def test_get_document_returns_200(monkeypatch, tmp_path):
     )
     assert resp.headers["ETag"] == f'"{"a" * 64}"'
     assert "inline" in resp.headers.get("Content-Disposition", "").lower()
-
-
-
-def test_get_doc_returns_200(monkeypatch, tmp_path):
-    client = app.test_client()
-
-    # Create the temporary watermarks directory
-    watermarks_dir = tmp_path / "watermarks"
-    watermarks_dir.mkdir()
-
-    # Create a fake watermarked PDF
-    pdf_path = watermarks_dir / "test-watermarked.pdf"
-    pdf_content = b"%PDF-1.4\nTest RMAP watermarked PDF\n%%EOF"
-    pdf_path.write_bytes(pdf_content)
-
-    # Valid 32-character hexadecimal token
-    token = "a" * 32
-
-    # Mock the database row
-    fake_version = SimpleNamespace(
-        link=token,
-        intended_for="test-user",
-        path=str(pdf_path),
-    )
-
-    monkeypatch.setitem(
-        app.config,
-        "_ENGINE",
-        FakeRowsEngine([fake_version]),
-    )
-
-    # Patch the closure cell captured by the get_doc route.
-    view = app.view_functions["get_doc"]
-    freevars = view.__code__.co_freevars
-    closure_cells = dict(zip(freevars, view.__closure__ or ()))
-
-    assert "RMAP_DOC" in closure_cells
-
-    rmap_doc_cell = closure_cells["RMAP_DOC"]
-    original_rmap_doc = rmap_doc_cell.cell_contents
-
-    rmap_doc_cell.cell_contents = str(tmp_path / "rmap-document.pdf")
-
-    try:
-        resp = client.get(f"/get-doc/{token}")
-    finally:
-        # Restore the original value after the request
-        rmap_doc_cell.cell_contents = original_rmap_doc
-
-    # Verify the PDF response
-    assert resp.status_code == 200
-    assert resp.mimetype == "application/pdf"
-    assert resp.data == pdf_content
-    assert "inline" in resp.headers.get(
-        "Content-Disposition", ""
-    ).lower()
 
 
 def test_get_version_returns_200(monkeypatch, tmp_path):
@@ -741,6 +583,7 @@ def test_create_watermark_returns_201(monkeypatch, tmp_path):
         b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
     )
 
+### Delete document tests ###
 
 def test_delete_document_returns_200(monkeypatch, tmp_path):
     client = authenticated_client(monkeypatch)
@@ -813,6 +656,21 @@ def test_delete_document_returns_200(monkeypatch, tmp_path):
     # Confirm the file was removed
     assert not pdf_path.exists()
 
+def test_delete_document_requires_authentication():
+    client = app.test_client()
+    resp = client.delete("/api/delete-document/9")
+
+    assert resp.status_code in (401, 403)
+
+def test_delete_document_denies_document_not_owned(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    resp = client.delete("/api/delete-document/9")
+
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "document not found"
+
+### Create user tests ###
 
 def test_create_user_returns_201(monkeypatch):
     class FakeInsertResult:
@@ -873,6 +731,15 @@ def test_create_user_returns_201(monkeypatch):
         "login": "test-user",
     }
 
+def test_create_user_requires_fields():
+    client = app.test_client()
+
+    resp = client.post("/api/create-user", json={})
+
+    assert resp.status_code == 400
+    assert "required" in resp.get_json()["error"]
+
+### Read watermark tests ###
 
 def test_read_watermark_returns_201(monkeypatch, tmp_path):
     client = authenticated_client(monkeypatch)
@@ -948,6 +815,27 @@ def test_read_watermark_returns_201(monkeypatch, tmp_path):
         "position": "bottom-right",
     }
 
+def test_read_watermark_requires_authentication():
+    client = app.test_client()
+    resp = client.post("/api/read-watermark")
+
+    assert resp.status_code in (401, 403)
+
+def test_read_watermark_denies_document_not_owned(monkeypatch):
+    client = authenticated_client(monkeypatch)
+
+    resp = client.post(
+        "/api/read-watermark/9",
+        json={"method": "test", "key": "test-key"},
+    )
+
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "document not found"
+
+### RMAP tests ###
+
+### RMAP initiate tests ###
+
 def test_rmap_initiate_returns_200(monkeypatch):
     view = app.view_functions["rmap_initiate_msg1"]
     closure_cells = dict(
@@ -975,3 +863,117 @@ def test_rmap_initiate_returns_200(monkeypatch):
         "payload": "response-payload",
         "message": "msg2",
     }
+
+def test_rmap_initiate_rejects_missing_json():
+    client = app.test_client()
+    resp = client.post(
+        "/api/rmap-initiate",
+        content_type="application/json",
+    )
+
+    assert resp.status_code >= 400
+
+### RMAP get link tests ###
+
+def test_rmap_getlink_msg2_returns_200(monkeypatch):
+    client = app.test_client()
+    view = app.view_functions["rmap_getlink_msg2"]
+
+    closure_vars = get_route_closure_vars("rmap_getlink_msg2")
+    rmap_server = closure_vars["server"]
+
+    # Mock the handshake so it doesn't perform real RMAP processing.
+    monkeypatch.setattr(
+        rmap_server,
+        "receiveMsg2",
+        lambda info: (
+            "test-identity",
+            "b" * 32,
+            {"status": "ok"},
+        ),
+    )
+
+    # Find the closure cell containing the local watermark function.
+    freevars = view.__code__.co_freevars
+    closure_cells = dict(zip(freevars, view.__closure__ or ()))
+
+    assert "make_rmap_watermark" in closure_cells, (
+        f"Available closure variables: {list(closure_cells)}"
+    )
+
+    watermark_cell = closure_cells["make_rmap_watermark"]
+    original_watermark_function = watermark_cell.cell_contents
+
+    # Replace it temporarily to prevent real database/file operations.
+    watermark_cell.cell_contents = lambda **kwargs: None
+
+    try:
+        resp = client.post(
+            "/api/rmap-get-link",
+            json={"msg2": "test-message"},
+        )
+    finally:
+        # Restore the original closure function.
+        watermark_cell.cell_contents = original_watermark_function
+
+    assert resp.status_code == 200, (
+        f"Response status: {resp.status_code}; "
+        f"response body: {resp.get_json()}"
+    )
+    assert resp.get_json() == {"status": "ok"}
+
+### RMAP get doc tests ###
+
+def test_get_doc_returns_200(monkeypatch, tmp_path):
+    client = app.test_client()
+
+    # Create the temporary watermarks directory
+    watermarks_dir = tmp_path / "watermarks"
+    watermarks_dir.mkdir()
+
+    # Create a fake watermarked PDF
+    pdf_path = watermarks_dir / "test-watermarked.pdf"
+    pdf_content = b"%PDF-1.4\nTest RMAP watermarked PDF\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    # Valid 32-character hexadecimal token
+    token = "a" * 32
+
+    # Mock the database row
+    fake_version = SimpleNamespace(
+        link=token,
+        intended_for="test-user",
+        path=str(pdf_path),
+    )
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeRowsEngine([fake_version]),
+    )
+
+    # Patch the closure cell captured by the get_doc route.
+    view = app.view_functions["get_doc"]
+    freevars = view.__code__.co_freevars
+    closure_cells = dict(zip(freevars, view.__closure__ or ()))
+
+    assert "RMAP_DOC" in closure_cells
+
+    rmap_doc_cell = closure_cells["RMAP_DOC"]
+    original_rmap_doc = rmap_doc_cell.cell_contents
+
+    rmap_doc_cell.cell_contents = str(tmp_path / "rmap-document.pdf")
+
+    try:
+        resp = client.get(f"/get-doc/{token}")
+    finally:
+        # Restore the original value after the request
+        rmap_doc_cell.cell_contents = original_rmap_doc
+
+    # Verify the PDF response
+    assert resp.status_code == 200
+    assert resp.mimetype == "application/pdf"
+    assert resp.data == pdf_content
+    assert "inline" in resp.headers.get(
+        "Content-Disposition", ""
+    ).lower()
