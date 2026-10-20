@@ -631,3 +631,112 @@ def test_get_version_returns_200(monkeypatch, tmp_path):
     assert resp.data == pdf_content
     assert resp.headers["Cache-Control"] == "private, max-age=0"
     assert "inline" in resp.headers.get("Content-Disposition", "").lower()
+
+
+def test_create_watermark_returns_201(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary source PDF
+    pdf_path = tmp_path / "test-document.pdf"
+    pdf_content = b"%PDF-1.4\nTest source PDF\n%%EOF"
+    pdf_path.write_bytes(pdf_content)
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", tmp_path)
+
+    # Fake document returned by the database lookup
+    fake_document = {
+        "id": 1,
+        "name": "test-document.pdf",
+        "path": str(pdf_path),
+    }
+
+    class FakeMappingResult:
+        def first(self):
+            return fake_document
+
+    class FakeInsertResult:
+        lastrowid = 42
+
+    class FakeWatermarkConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement)
+
+            if "SELECT id, name, path" in sql:
+                class Result:
+                    def mappings(self):
+                        return FakeMappingResult()
+                return Result()
+
+            if "INSERT INTO Versions" in sql:
+                return FakeInsertResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeWatermarkEngine:
+        def connect(self):
+            return FakeWatermarkConnection()
+
+        def begin(self):
+            return FakeWatermarkConnection()
+
+    monkeypatch.setitem(
+        app.config,
+        "_ENGINE",
+        FakeWatermarkEngine(),
+    )
+
+    # Mock watermarking so no real watermarking is performed
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "is_watermarking_applicable",
+        lambda **kwargs: True,
+    )
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "apply_watermark",
+        lambda **kwargs: b"%PDF-1.4\nFake watermarked PDF\n%%EOF",
+    )
+
+    payload = {
+        "method": "test-method",
+        "intended_for": "Test User",
+        "position": "bottom-right",
+        "secret": "test-secret",
+        "key": "test-key",
+    }
+
+    resp = client.post(
+        "/api/create-watermark/1",
+        json=payload,
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+
+    data = resp.get_json()
+    assert data["id"] == 42
+    assert data["documentid"] == 1
+    assert len(data["link"]) == 32
+    assert data["intended_for"] == "Test User"
+    assert data["method"] == "test-method"
+    assert data["position"] == "bottom-right"
+    assert data["filename"].endswith(".pdf")
+    assert data["size"] == len(
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
+
+    # Verify the generated file was written
+    output_path = (
+        tmp_path
+        / "watermarks"
+        / data["filename"]
+    )
+    assert output_path.exists()
+    assert output_path.read_bytes() == (
+        b"%PDF-1.4\nFake watermarked PDF\n%%EOF"
+    )
