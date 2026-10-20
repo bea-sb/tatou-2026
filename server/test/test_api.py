@@ -812,3 +812,138 @@ def test_delete_document_returns_200(monkeypatch, tmp_path):
 
     # Confirm the file was removed
     assert not pdf_path.exists()
+
+
+def test_create_user_returns_201(monkeypatch):
+    class FakeInsertResult:
+        lastrowid = 42
+
+    class FakeSelectResult:
+        def one(self):
+            return SimpleNamespace(
+                id=42,
+                email="test@example.com",
+                login="test-user",
+            )
+
+    class FakeCreateUserConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+
+            if sql.startswith("INSERT INTO USERS"):
+                assert params["email"] == "test@example.com"
+                assert params["login"] == "test-user"
+                assert params["hpw"] != "test-password"
+                return FakeInsertResult()
+
+            if sql.startswith("SELECT ID, EMAIL, LOGIN FROM USERS"):
+                assert params["id"] == 42
+                return FakeSelectResult()
+
+            raise AssertionError(f"Unexpected SQL: {sql}")
+
+    class FakeCreateUserEngine:
+        def begin(self):
+            return FakeCreateUserConnection()
+
+    monkeypatch.setitem(
+        app.config, "_ENGINE", FakeCreateUserEngine()
+    )
+
+    client = app.test_client()
+    resp = client.post(
+        "/api/create-user",
+        json={
+            "email": " TEST@EXAMPLE.COM ",
+            "login": "test-user",
+            "password": "test-password",
+        },
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+    assert resp.get_json() == {
+        "id": 42,
+        "email": "test@example.com",
+        "login": "test-user",
+    }
+
+
+def test_read_watermark_returns_201(monkeypatch, tmp_path):
+    client = authenticated_client(monkeypatch)
+
+    # Create a temporary PDF inside storage.
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    pdf_path = storage_dir / "test-document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nTest PDF\n%%EOF")
+
+    monkeypatch.setitem(app.config, "STORAGE_DIR", str(storage_dir))
+
+    # Fake the document returned by the database.
+    fake_document = SimpleNamespace(
+        id=1,
+        name="test-document.pdf",
+        path=str(pdf_path),
+    )
+
+    class FakeReadResult:
+        def first(self):
+            return fake_document
+
+    class FakeReadConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def execute(self, statement, params=None):
+            sql = str(statement).strip().upper()
+            assert "SELECT ID, NAME, PATH" in sql
+            assert "FROM DOCUMENTS" in sql
+            assert params["id"] == 1
+            assert params["uid"] == 1
+            return FakeReadResult()
+
+    class FakeReadEngine:
+        def connect(self):
+            return FakeReadConnection()
+
+    monkeypatch.setitem(app.config, "_ENGINE", FakeReadEngine())
+
+    # Mock watermark reading so the test doesn't process a real watermark.
+    def fake_read_watermark(method, pdf, key):
+        assert method == "LSB"
+        assert pdf == str(pdf_path)
+        assert key == "test-key"
+        return "my-secret"
+
+    monkeypatch.setattr(
+        server_module.WMUtils,
+        "read_watermark",
+        staticmethod(fake_read_watermark),
+    )
+
+    resp = client.post(
+        "/api/read-watermark",
+        json={
+            "id": 1,
+            "method": "LSB",
+            "key": "test-key",
+            "position": "bottom-right",
+        },
+    )
+
+    assert resp.status_code == 201, resp.get_data(as_text=True)
+    assert resp.get_json() == {
+        "documentid": 1,
+        "secret": "my-secret",
+        "method": "LSB",
+        "position": "bottom-right",
+    }
